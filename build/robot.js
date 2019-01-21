@@ -17,23 +17,17 @@ class MyRobot extends BCAbstractRobot {
       [-1, -1],
     ];
     this.step++;
-    if (this.me.unit === SPECS.PILGRIM) {
-      this.log(`Pilgrim health: ${this.me.health}`);
-    }
-    if (this.me.unit === SPECS.PREACHER) {
-      this.log(`Preacher health: ${this.me.health}`);
-    }
-    if (this.me.unit === SPECS.CRUSADER) {
-      this.log(`Crusader health: ${this.me.health}`);
-      const choice = adjChoices[Math.floor(Math.random() * adjChoices.length)];
-      return this.move(choice[0], choice[1]);
-    }
+    if (this.me.unit === SPECS.PILGRIM);
+    if (this.me.unit === SPECS.PREACHER);
+    if (this.me.unit === SPECS.CRUSADER);
     if (this.me.unit === SPECS.CASTLE) {
-      this.log(`Castle health: ${this.me.health}`);
+      // this.log(`Castle health: ${this.me.health}`);
       if (this.step % 10 === 0) {
         let i = 0;
         while (
-          !this.map[adjChoices[i][1]][adjChoices[i][0]] &&
+          !this.map[this.me.y + adjChoices[i][1]][
+            this.me.x + adjChoices[i][0]
+          ] &&
           i < adjChoices.length
         ) {
           // Makes sure the terrain is passable.
