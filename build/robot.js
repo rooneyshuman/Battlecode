@@ -6,7 +6,7 @@ class MyRobot extends BCAbstractRobot {
     this.step = 0;
   }
   turn() {
-    const adj_choices = [
+    const adjChoices = [
       [0, -1],
       [1, -1],
       [1, 0],
@@ -25,8 +25,7 @@ class MyRobot extends BCAbstractRobot {
     }
     if (this.me.unit === SPECS.CRUSADER) {
       this.log(`Crusader health: ${this.me.health}`);
-      const choice =
-        adj_choices[Math.floor(Math.random() * adj_choices.length)];
+      const choice = adjChoices[Math.floor(Math.random() * adjChoices.length)];
       return this.move(choice[0], choice[1]);
     }
     if (this.me.unit === SPECS.CASTLE) {
@@ -34,21 +33,21 @@ class MyRobot extends BCAbstractRobot {
       if (this.step % 10 === 0) {
         let i = 0;
         while (
-          !this.map[adj_choices[i][1]][adj_choices[i][0]] &&
-          i < adj_choices.length
+          !this.map[adjChoices[i][1]][adjChoices[i][0]] &&
+          i < adjChoices.length
         ) {
           // Makes sure the terrain is passable.
           // this.map is indexed as [y][x]
           i++;
         }
         this.log(
-          `Building a crusader at (${this.me.x + adj_choices[i][0]}, ${this.me
-            .y + adj_choices[i][1]})`,
+          `Building a crusader at (${this.me.x + adjChoices[i][0]}, ${this.me
+            .y + adjChoices[i][1]})`,
         );
         return this.buildUnit(
           SPECS.CRUSADER,
-          adj_choices[i][0],
-          adj_choices[i][1],
+          adjChoices[i][0],
+          adjChoices[i][1],
         );
       }
     }
