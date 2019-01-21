@@ -6,6 +6,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "test": "mocha",
     "build": "rimraf build && rollup -c",
     "lint": "tslint -p tsconfig.json -c tslint.json -t stylish",
     "start": "npm run build && bc19run -r build -b build",
