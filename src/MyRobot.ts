@@ -1,6 +1,6 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 
-class MyRobot extends BCAbstractRobot {
+export class MyRobot extends BCAbstractRobot {
   private step = 0;
   private adjChoices = [
       [0, -1],
@@ -47,6 +47,7 @@ class MyRobot extends BCAbstractRobot {
       return this.buildUnit(SPECS.CRUSADER, buildLoc[0], buildLoc[1]);
     }
   }
+
   private randomValidLoc(): number[] {
     // TODO: Possibly check if a unit is in the desired space for movement?
     const mapDim = this.map[0].length
@@ -85,6 +86,21 @@ class MyRobot extends BCAbstractRobot {
     }
     return this.adjChoices[i]
   }
+}
+
+export function miningLocations(map: BCAbstractRobot["fuel_map"] | BCAbstractRobot["karbonite_map"]) {
+  const locations = [];
+  let i = 0;
+  let j = 0;
+  while(i < map.length) {
+    // i is the x coord, j is the y coord.
+    // FIXME: this is wrong.
+    const resourceLoc: number = map[i].indexOf(true, j);
+    locations.push([i, resourceLoc]);
+    j = resourceLoc;
+    i++;
+  }
+  return locations;
 }
 
 
