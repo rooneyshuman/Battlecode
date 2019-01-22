@@ -1,4 +1,5 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
+import {miningLocations} from "./utils";
 
 export class MyRobot extends BCAbstractRobot {
   private step = 0;
@@ -87,22 +88,6 @@ export class MyRobot extends BCAbstractRobot {
     return this.adjChoices[i]
   }
 }
-
-export function miningLocations(map: BCAbstractRobot["fuel_map"] | BCAbstractRobot["karbonite_map"]) {
-  const locations = [];
-  let i = 0;
-  let j = 0;
-  while(i < map.length) {
-    // i is the x coord, j is the y coord.
-    // FIXME: this is wrong.
-    const resourceLoc: number = map[i].indexOf(true, j);
-    locations.push([i, resourceLoc]);
-    j = resourceLoc;
-    i++;
-  }
-  return locations;
-}
-
 
 // Prevent Rollup from removing the entire class for being unused
 // tslint:disable-next-line no-unused-expression
