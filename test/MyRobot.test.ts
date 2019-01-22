@@ -1,5 +1,8 @@
-import { miningLocations, MyRobot } from "../src/MyRobot";
+import { miningLocations } from "../src/MyRobot";
 
-test("Basic", () => {
-    expect(1 + 1).toBe(2);
+// let robot = new MyRobot();
+
+test("Mining Locations", () => {
+    const testMap = [[true, false, false], [false, true, false], [false, false, true]]
+    expect(miningLocations(testMap)).toHaveLength(3);
 })
