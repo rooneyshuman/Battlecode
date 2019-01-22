@@ -48,7 +48,7 @@ class MyRobot extends BCAbstractRobot {
     }
   }
   private randomValidLoc(): number[] {
-    // FIXME: Fix for map edges.
+    // TODO: Possibly check if a unit is in the desired space for movement?
     const mapDim = this.map[0].length
     let rand = Math.floor(Math.random() * this.adjChoices.length);
     let loc = this.adjChoices[rand];
