@@ -1,6 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
+import {miningLocations} from "./utils";
 
-class MyRobot extends BCAbstractRobot {
+export class MyRobot extends BCAbstractRobot {
   private step = 0;
   private adjChoices = [
       [0, -1],
@@ -47,6 +48,7 @@ class MyRobot extends BCAbstractRobot {
       return this.buildUnit(SPECS.CRUSADER, buildLoc[0], buildLoc[1]);
     }
   }
+
   private randomValidLoc(): number[] {
     // TODO: Possibly check if a unit is in the desired space for movement?
     const mapDim = this.map[0].length
@@ -86,7 +88,6 @@ class MyRobot extends BCAbstractRobot {
     return this.adjChoices[i]
   }
 }
-
 
 // Prevent Rollup from removing the entire class for being unused
 // tslint:disable-next-line no-unused-expression
