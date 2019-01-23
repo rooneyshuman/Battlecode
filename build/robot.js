@@ -1,5 +1,28 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 
+// const Attack = {};
+// Attack.attackFirst = (self) =>
+function attackFirst(self) {
+  // Get all visible robots within the robots vision radius
+  const visibleRobots = self.getVisibleRobots();
+  // Loop through the list of visible robots and remove the friendly robots and the ones not within attacking range\
+  const listLength = visibleRobots.length;
+  // let x = 0; // keep track of number of robots in attackableRobots array
+  let i;
+  for (i = 0; i < listLength; ++i) {
+    // Check if the robot just showed up because of radio broadcast
+    if (!self.isVisible(visibleRobots[i])) {
+      continue;
+    }
+    // Check if robot is friendly
+    if (self.me.team === visibleRobots[i].team) {
+      continue;
+    }
+    self.log('ROBOT: ' + visibleRobots[i].id + ' is an enemy within vision');
+  }
+}
+// export default Attack;
+
 class MyRobot extends BCAbstractRobot {
   constructor() {
     super(...arguments);
@@ -28,7 +51,8 @@ class MyRobot extends BCAbstractRobot {
         break;
       }
       case SPECS.CRUSADER: {
-        // this.log(`Crusader health: ${this.me.health}`);
+        this.log(`Crusader health: ${this.me.health}`);
+        attackFirst(this);
         const choice = this.randomValidLoc();
         return this.move(choice[0], choice[1]);
       }
@@ -46,7 +70,7 @@ class MyRobot extends BCAbstractRobot {
     }
   }
   randomValidLoc() {
-    // FIXME: Fix for map edges.
+    // TODO: Possibly check if a unit is in the desired space for movement?
     const mapDim = this.map[0].length;
     let rand = Math.floor(Math.random() * this.adjChoices.length);
     let loc = this.adjChoices[rand];
@@ -93,3 +117,5 @@ class MyRobot extends BCAbstractRobot {
 // Prevent Rollup from removing the entire class for being unused
 // tslint:disable-next-line no-unused-expression
 new MyRobot();
+
+export { MyRobot };
