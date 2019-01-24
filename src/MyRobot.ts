@@ -23,8 +23,7 @@ class MyRobot extends BCAbstractRobot {
     switch(this.me.unit){
       case SPECS.PILGRIM: {
         this.log("Pilgrim");
-        this.handlePilgrim();
-        break;
+        return this.handlePilgrim();
       }
       
       case SPECS.PREACHER: {
@@ -53,6 +52,7 @@ class MyRobot extends BCAbstractRobot {
       this.firstTurn = false;
     }
   }
+
   private handleCastle(): Action | Falsy {
     // this.log(`Castle health: ${this.me.health}`);
     if (this.step % 10 === 0) {
