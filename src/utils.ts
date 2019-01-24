@@ -16,3 +16,17 @@ export function miningLocations(map: boolean[][]): number[][] {
   }
   return locations;
 }
+
+/**
+ * Uses A* algorithm to find the shortest path between start and end
+ * Credit: Amit Patel, reblobgames, A* algorithm
+ * A* is like Djikstra's 
+ */
+export function pathFinder(map: boolean[][], start: number[], end: number[]) {
+  return 0
+}
+
+function heuristic(a: number[], b: number[]) {
+  // Manhattan distance on a square grid.
+  return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+}
