@@ -1,4 +1,4 @@
-import { BCAbstractRobot, SPECS } from 'battlecode';
+import { SPECS, BCAbstractRobot } from 'battlecode';
 
 // const Attack = {};
 // Attack.attackFirst = (self) =>
@@ -10,15 +10,25 @@ function attackFirst(self) {
   // let x = 0; // keep track of number of robots in attackableRobots array
   let i;
   for (i = 0; i < listLength; ++i) {
+    let rob = visibleRobots[i];
     // Check if the robot just showed up because of radio broadcast
-    if (!self.isVisible(visibleRobots[i])) {
+    if (!self.isVisible(rob)) {
       continue;
     }
     // Check if robot is friendly
-    if (self.me.team === visibleRobots[i].team) {
+    if (self.me.team === rob.team) {
       continue;
     }
-    self.log('ROBOT: ' + visibleRobots[i].id + ' is an enemy within vision');
+    self.log('ROBOT: ' + rob.id + ' is an enemy within vision');
+    const dist =
+      Math.pow(rob.x - self.me.x, 2) + Math.pow(rob.y - self.me.y, 2);
+    if (
+      SPECS.UNITS[self.me.unit].ATTACK_RADIUS[0] <= dist &&
+      dist <= SPECS.UNITS[self.me.unit].ATTACK_RADIUS[1]
+    ) {
+      self.log('Attacking ROBOT:' + rob.id);
+      return self.attack(rob.x - self.me.x, rob.y - self.me.y);
+    }
   }
 }
 // export default Attack;
@@ -52,8 +62,11 @@ class MyRobot extends BCAbstractRobot {
       }
       case SPECS.CRUSADER: {
         this.log(`Crusader health: ${this.me.health}`);
-        attackFirst(this);
+        let attackingCoordinates = attackFirst(this);
         const choice = this.randomValidLoc();
+        if (this.step % 2 == 0) {
+          return attackFirst(this);
+        }
         return this.move(choice[0], choice[1]);
       }
       case SPECS.CASTLE: {

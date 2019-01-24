@@ -30,8 +30,12 @@ export class MyRobot extends BCAbstractRobot {
       }
       case SPECS.CRUSADER: {
         this.log(`Crusader health: ${this.me.health}`);
-		attackFirst(this);
+		const attackingCoordinates = attackFirst(this);
         const choice: number[] = this.randomValidLoc();
+		if(this.step % 2 === 0)
+		{
+			return attackFirst(this);
+		}
         return this.move(choice[0], choice[1]);
       }
 

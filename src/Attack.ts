@@ -13,14 +13,21 @@ export function attackFirst(self: any)
 	let i;
 	for(i = 0; i < listLength; ++ i)
 	{
+		const rob = visibleRobots[i];
 		// Check if the robot just showed up because of radio broadcast
-		if(!self.isVisible(visibleRobots[i]))
+		if(!self.isVisible(rob))
 		{continue;}
 		// Check if robot is friendly
-		if(self.me.team === visibleRobots[i].team)
+		if(self.me.team === rob.team)
 		{continue;}
-		self.log("ROBOT: " + visibleRobots[i].id + " is an enemy within vision");
+		self.log("ROBOT: " + rob.id + " is an enemy within vision");
 
+        const dist = (rob.x - self.me.x)**2 + (rob.y - self.me.y)**2;
+		if(SPECS.UNITS[self.me.unit].ATTACK_RADIUS[0] <= dist && dist <= SPECS.UNITS[self.me.unit].ATTACK_RADIUS[1])
+		{
+			self.log("Attacking ROBOT:" + rob.id);
+			return self.attack(rob.x - self.me.x, rob.y - self.me.y);
+		}
 	}	
 }
 // export default Attack;
