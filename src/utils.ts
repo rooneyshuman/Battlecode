@@ -1,4 +1,9 @@
-export function miningLocations(map: boolean[][]) {
+/**
+ * Finds locations for the given map
+ * @param { boolean [][] } map
+ * @returns { boolean [][] } Array containing elements that consist of [x , y]
+ */
+export function miningLocations(map: boolean[][]): number[][] {
   const locations = [];
   let i = 0;
   let j = 0;

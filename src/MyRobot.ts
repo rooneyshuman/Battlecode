@@ -3,7 +3,8 @@ import {miningLocations} from "./utils";
 
 class MyRobot extends BCAbstractRobot {
   private step = 0;
-  private adjChoices = [
+  private firstTurn: boolean= true;
+  private readonly adjChoices: number[][] = [
       [0, -1],
       [1, -1],
       [1, 0],
@@ -14,19 +15,15 @@ class MyRobot extends BCAbstractRobot {
       [-1, -1],
     ];
 
-  private karboniteLocations = undefined;
-  private fuelLocations = undefined;
+  private karboniteLocations: number[][] = undefined;
+  private fuelLocations: number[][] = undefined;
   
   public turn(): Action | Falsy {
-    if (this.step === 0) {
-      this.karboniteLocations = miningLocations(this.karbonite_map);
-      this.fuelLocations = miningLocations(this.fuel_map);
-    }
-
     this.step++;
     switch(this.me.unit){
       case SPECS.PILGRIM: {
         this.log("Pilgrim");
+        this.handlePilgrim();
         break;
       }
       
@@ -47,7 +44,15 @@ class MyRobot extends BCAbstractRobot {
       }
     }
   }
-
+  
+  private handlePilgrim(): Action | Falsy {
+    if (this.firstTurn === true) {
+      this.log("FINDING > > >")
+      this.karboniteLocations = miningLocations(this.karbonite_map);
+      this.fuelLocations = miningLocations(this.fuel_map);
+      this.firstTurn = false;
+    }
+  }
   private handleCastle(): Action | Falsy {
     // this.log(`Castle health: ${this.me.health}`);
     if (this.step % 10 === 0) {

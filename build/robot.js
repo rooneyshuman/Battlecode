@@ -1,9 +1,29 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 
+/**
+ * Finds locations for the given map
+ * @param { boolean [][] } map
+ * @returns { boolean [][] } Array containing elements that consist of [x , y]
+ */
+function miningLocations(map) {
+  const locations = [];
+  let i = 0;
+  let j = 0;
+  while (i < map.length) {
+    // i is the x coord, j is the y coord.
+    const resourceLoc = map[i].indexOf(true, j);
+    locations.push([i, resourceLoc]);
+    j = resourceLoc;
+    i++;
+  }
+  return locations;
+}
+
 class MyRobot extends BCAbstractRobot {
   constructor() {
     super(...arguments);
     this.step = 0;
+    this.firstTurn = true;
     this.adjChoices = [
       [0, -1],
       [1, -1],
@@ -14,8 +34,16 @@ class MyRobot extends BCAbstractRobot {
       [-1, 0],
       [-1, -1],
     ];
+    this.karboniteLocations = undefined;
+    this.fuelLocations = undefined;
   }
   turn() {
+    if (this.firstTurn === true) {
+      this.log('FINDING > > >');
+      this.karboniteLocations = miningLocations(this.karbonite_map);
+      this.fuelLocations = miningLocations(this.fuel_map);
+      this.firstTurn = false;
+    }
     this.step++;
     switch (this.me.unit) {
       case SPECS.PILGRIM: {
@@ -46,7 +74,7 @@ class MyRobot extends BCAbstractRobot {
     }
   }
   randomValidLoc() {
-    // FIXME: Fix for map edges.
+    // TODO: Possibly check if a unit is in the desired space for movement?
     const mapDim = this.map[0].length;
     let rand = Math.floor(Math.random() * this.adjChoices.length);
     let loc = this.adjChoices[rand];
