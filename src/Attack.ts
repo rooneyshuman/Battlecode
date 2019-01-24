@@ -20,6 +20,7 @@ export function attackFirst(self: any)
 		if(self.me.team === visibleRobots[i].team)
 		{continue;}
 		self.log("ROBOT: " + visibleRobots[i].id + " is an enemy within vision");
+
 	}	
 }
 // export default Attack;

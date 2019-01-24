@@ -117,5 +117,3 @@ class MyRobot extends BCAbstractRobot {
 // Prevent Rollup from removing the entire class for being unused
 // tslint:disable-next-line no-unused-expression
 new MyRobot();
-
-export { MyRobot };
