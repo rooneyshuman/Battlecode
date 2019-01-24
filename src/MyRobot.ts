@@ -1,7 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import {miningLocations} from "./utils";
 
-export class MyRobot extends BCAbstractRobot {
+class MyRobot extends BCAbstractRobot {
   private step = 0;
   private adjChoices = [
       [0, -1],
@@ -13,8 +13,16 @@ export class MyRobot extends BCAbstractRobot {
       [-1, 0],
       [-1, -1],
     ];
+
+  private karboniteLocations = undefined;
+  private fuelLocations = undefined;
   
   public turn(): Action | Falsy {
+    if (this.step === 0) {
+      this.karboniteLocations = miningLocations(this.karbonite_map);
+      this.fuelLocations = miningLocations(this.fuel_map);
+    }
+
     this.step++;
     switch(this.me.unit){
       case SPECS.PILGRIM: {
