@@ -2,7 +2,7 @@ import { BCAbstractRobot, SPECS } from 'battlecode';
 import {attackFirst} from "./Attack";
 import {miningLocations} from "./utils";
 
-export class MyRobot extends BCAbstractRobot {
+class MyRobot extends BCAbstractRobot {
   private step = 0;
   private adjChoices = [
       [0, -1],
