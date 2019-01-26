@@ -1,4 +1,5 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
+import {attackFirst} from "./Attack";
 import {miningLocations} from "./utils";
 
 export class MyRobot extends BCAbstractRobot {
@@ -28,9 +29,13 @@ export class MyRobot extends BCAbstractRobot {
         break;
       }
       case SPECS.CRUSADER: {
-        // this.log(`Crusader health: ${this.me.health}`);
-
+        this.log(`Crusader health: ${this.me.health}`);
+		const attackingCoordinates = attackFirst(this);
         const choice: number[] = this.randomValidLoc();
+		if(this.step % 2 === 0)
+		{
+			return attackFirst(this);
+		}
         return this.move(choice[0], choice[1]);
       }
 

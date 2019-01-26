@@ -1,4 +1,37 @@
-import { BCAbstractRobot, SPECS } from 'battlecode';
+import { SPECS, BCAbstractRobot } from 'battlecode';
+
+// const Attack = {};
+// Attack.attackFirst = (self) =>
+function attackFirst(self) {
+  // Get all visible robots within the robots vision radius
+  const visibleRobots = self.getVisibleRobots();
+  // Loop through the list of visible robots and remove the friendly robots and the ones not within attacking range\
+  const listLength = visibleRobots.length;
+  // let x = 0; // keep track of number of robots in attackableRobots array
+  let i;
+  for (i = 0; i < listLength; ++i) {
+    let rob = visibleRobots[i];
+    // Check if the robot just showed up because of radio broadcast
+    if (!self.isVisible(rob)) {
+      continue;
+    }
+    // Check if robot is friendly
+    if (self.me.team === rob.team) {
+      continue;
+    }
+    self.log('ROBOT: ' + rob.id + ' is an enemy within vision');
+    const dist =
+      Math.pow(rob.x - self.me.x, 2) + Math.pow(rob.y - self.me.y, 2);
+    if (
+      SPECS.UNITS[self.me.unit].ATTACK_RADIUS[0] <= dist &&
+      dist <= SPECS.UNITS[self.me.unit].ATTACK_RADIUS[1]
+    ) {
+      self.log('Attacking ROBOT:' + rob.id);
+      return self.attack(rob.x - self.me.x, rob.y - self.me.y);
+    }
+  }
+}
+// export default Attack;
 
 class MyRobot extends BCAbstractRobot {
   constructor() {
@@ -28,8 +61,12 @@ class MyRobot extends BCAbstractRobot {
         break;
       }
       case SPECS.CRUSADER: {
-        // this.log(`Crusader health: ${this.me.health}`);
+        this.log(`Crusader health: ${this.me.health}`);
+        let attackingCoordinates = attackFirst(this);
         const choice = this.randomValidLoc();
+        if (this.step % 2 == 0) {
+          return attackFirst(this);
+        }
         return this.move(choice[0], choice[1]);
       }
       case SPECS.CASTLE: {
@@ -46,7 +83,7 @@ class MyRobot extends BCAbstractRobot {
     }
   }
   randomValidLoc() {
-    // FIXME: Fix for map edges.
+    // TODO: Possibly check if a unit is in the desired space for movement?
     const mapDim = this.map[0].length;
     let rand = Math.floor(Math.random() * this.adjChoices.length);
     let loc = this.adjChoices[rand];
