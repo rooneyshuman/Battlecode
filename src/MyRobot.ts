@@ -1,56 +1,65 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
-import {attackFirst} from "./Attack";
-import {miningLocations} from "./utils";
+import { attackFirst } from "./Attack";
+import { castleBuild, pilgrimBuild } from './BuildUnits';
+import { miningLocations } from "./utils";
 
 class MyRobot extends BCAbstractRobot {
   private step = 0;
   private adjChoices = [
-      [0, -1],
-      [1, -1],
-      [1, 0],
-      [1, 1],
-      [0, 1],
-      [-1, 1],
-      [-1, 0],
-      [-1, -1],
-    ];
-  
+    [0, -1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [-1, -1],
+  ];
+
   public turn(): Action | Falsy {
     this.step++;
-    switch(this.me.unit){
+    const choice: number[] = this.randomValidLoc();
+    switch (this.me.unit) {
       case SPECS.PILGRIM: {
-        this.log("Pilgrim");
+        this.log(`Pilgrim health: ${this.me.health}`);
+        if (this.step % 2 === 0) {
+          return pilgrimBuild(this);
+        }
+        return this.move(choice[0], choice[1]);
         break;
       }
-      
-      case SPECS.PREACHER: {
-        this.log("Preacher");
-        // Add unit handling in another function
-        break;
-      }
+
       case SPECS.CRUSADER: {
         this.log(`Crusader health: ${this.me.health}`);
-		const attackingCoordinates = attackFirst(this);
-        const choice: number[] = this.randomValidLoc();
-		if(this.step % 2 === 0)
-		{
-			return attackFirst(this);
-		}
+        const attackingCoordinates = attackFirst(this);
+        if (this.step % 2 === 0) {
+          return attackFirst(this);
+        }
         return this.move(choice[0], choice[1]);
       }
 
-      case SPECS.CASTLE: {
-        return this.handleCastle()
+      case SPECS.PROPHET: {
+        this.log(`Prophet health: ${this.me.health}`);
+        const attackingCoordinates = attackFirst(this);
+        if (this.step % 2 === 0) {
+          return attackFirst(this);
+        }
+        return this.move(choice[0], choice[1]);
       }
-    }
-  }
 
-  private handleCastle(): Action | Falsy {
-    // this.log(`Castle health: ${this.me.health}`);
-    if (this.step % 10 === 0) {
-      const buildLoc: number[] = this.simpleValidLoc()
-      this.log(`Building a crusader at (${buildLoc[0]}, ${buildLoc[1]})`,);
-      return this.buildUnit(SPECS.CRUSADER, buildLoc[0], buildLoc[1]);
+      case SPECS.PREACHER: {
+        this.log(`Preacher health: ${this.me.health}`);
+        const attackingCoordinates = attackFirst(this);
+        if (this.step % 2 === 0) {
+          return attackFirst(this);
+        }
+        return this.move(choice[0], choice[1]);
+        break;
+      }
+
+      case SPECS.CASTLE: {
+        return castleBuild(this);
+      }
     }
   }
 
@@ -62,22 +71,22 @@ class MyRobot extends BCAbstractRobot {
     let counter = 0;
 
     do {
-      if(this.me.y + loc[1] >= mapDim) {
+      if (this.me.y + loc[1] >= mapDim) {
         loc[1] = -1;
       }
-      if(this.me.y + loc[1] < 0) {
+      if (this.me.y + loc[1] < 0) {
         loc[1] = 1;
       }
-      if(this.me.x + loc[0] >= mapDim) {
+      if (this.me.x + loc[0] >= mapDim) {
         loc[0] = -1;
       }
-      if(this.me.x + loc[0] < 0) {
+      if (this.me.x + loc[0] < 0) {
         loc[0] = 1;
       }
       rand = (rand + 1) % this.adjChoices.length;
       counter++;
-    } while(!this.map[this.me.y + loc[1]][this.me.x+loc[0]] && counter < this.adjChoices.length);
-    if(counter >= this.adjChoices.length) {
+    } while (!this.map[this.me.y + loc[1]][this.me.x + loc[0]] && counter < this.adjChoices.length);
+    if (counter >= this.adjChoices.length) {
       loc = [0, 0];
     }
     return loc;
