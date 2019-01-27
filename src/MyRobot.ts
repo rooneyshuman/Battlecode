@@ -2,7 +2,7 @@ import { BCAbstractRobot, SPECS } from 'battlecode';
 import {attackFirst} from "./Attack";
 import {miningLocations} from "./utils";
 
-export class MyRobot extends BCAbstractRobot {
+class MyRobot extends BCAbstractRobot {
   private step = 0;
   private adjChoices = [
       [0, -1],
@@ -29,12 +29,13 @@ export class MyRobot extends BCAbstractRobot {
         break;
       }
       case SPECS.CRUSADER: {
-        this.log(`Crusader health: ${this.me.health}`);
+        // this.log(`Crusader health: ${this.me.health}`);
 		const attackingCoordinates = attackFirst(this);
         const choice: number[] = this.randomValidLoc();
-		if(this.step % 2 === 0)
+		
+		if(attackingCoordinates)
 		{
-			return attackFirst(this);
+			return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
 		}
         return this.move(choice[0], choice[1]);
       }

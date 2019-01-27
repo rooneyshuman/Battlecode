@@ -25,9 +25,12 @@ export function attackFirst(self: any)
         const dist = (rob.x - self.me.x)**2 + (rob.y - self.me.y)**2;
 		if(SPECS.UNITS[self.me.unit].ATTACK_RADIUS[0] <= dist && dist <= SPECS.UNITS[self.me.unit].ATTACK_RADIUS[1])
 		{
-			self.log("Attacking ROBOT:" + rob.id);
-			return self.attack(rob.x - self.me.x, rob.y - self.me.y);
+			self.log("CAN ATTACK ROBOT:" + rob.id);
+			const robotToAttack = new Array(2);
+			robotToAttack[0] = rob.x - self.me.x;
+			robotToAttack[1] = rob.y - self.me.y;
+			return robotToAttack;
 		}
+		return null;
 	}	
 }
-// export default Attack;
