@@ -26,14 +26,14 @@ class MyRobot extends BCAbstractRobot {
           return pilgrimBuild(this);
         }
         return this.move(choice[0], choice[1]);
-        break;
       }
 
       case SPECS.CRUSADER: {
         this.log(`Crusader health: ${this.me.health}`);
         const attackingCoordinates = attackFirst(this);
-        if (this.step % 2 === 0) {
-          return attackFirst(this);
+
+        if (attackingCoordinates) {
+          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
         }
         return this.move(choice[0], choice[1]);
       }
@@ -41,8 +41,9 @@ class MyRobot extends BCAbstractRobot {
       case SPECS.PROPHET: {
         this.log(`Prophet health: ${this.me.health}`);
         const attackingCoordinates = attackFirst(this);
-        if (this.step % 2 === 0) {
-          return attackFirst(this);
+
+        if (attackingCoordinates) {
+          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
         }
         return this.move(choice[0], choice[1]);
       }
@@ -50,11 +51,10 @@ class MyRobot extends BCAbstractRobot {
       case SPECS.PREACHER: {
         this.log(`Preacher health: ${this.me.health}`);
         const attackingCoordinates = attackFirst(this);
-        if (this.step % 2 === 0) {
-          return attackFirst(this);
+        if (attackingCoordinates) {
+          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
         }
         return this.move(choice[0], choice[1]);
-        break;
       }
 
       case SPECS.CASTLE: {
