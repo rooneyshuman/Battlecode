@@ -10,7 +10,7 @@ function attackFirst(self) {
   // let x = 0; // keep track of number of robots in attackableRobots array
   let i;
   for (i = 0; i < listLength; ++i) {
-    let rob = visibleRobots[i];
+    const rob = visibleRobots[i];
     // Check if the robot just showed up because of radio broadcast
     if (!self.isVisible(rob)) {
       continue;
@@ -26,12 +26,15 @@ function attackFirst(self) {
       SPECS.UNITS[self.me.unit].ATTACK_RADIUS[0] <= dist &&
       dist <= SPECS.UNITS[self.me.unit].ATTACK_RADIUS[1]
     ) {
-      self.log('Attacking ROBOT:' + rob.id);
-      return self.attack(rob.x - self.me.x, rob.y - self.me.y);
+      self.log('CAN ATTACK ROBOT:' + rob.id);
+      const robotToAttack = new Array(2);
+      robotToAttack[0] = rob.x - self.me.x;
+      robotToAttack[1] = rob.y - self.me.y;
+      return robotToAttack;
     }
+    return null;
   }
 }
-// export default Attack;
 
 class MyRobot extends BCAbstractRobot {
   constructor() {
@@ -61,11 +64,11 @@ class MyRobot extends BCAbstractRobot {
         break;
       }
       case SPECS.CRUSADER: {
-        this.log(`Crusader health: ${this.me.health}`);
-        let attackingCoordinates = attackFirst(this);
+        //this.log(`Crusader health: ${this.me.health}`);
+        const attackingCoordinates = attackFirst(this);
         const choice = this.randomValidLoc();
-        if (this.step % 2 == 0) {
-          return attackFirst(this);
+        if (attackingCoordinates) {
+          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
         }
         return this.move(choice[0], choice[1]);
       }
