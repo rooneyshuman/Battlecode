@@ -19,6 +19,7 @@ class MyRobot extends BCAbstractRobot {
 
   private karboniteLocations: number[][] = undefined;
   private fuelLocations: number[][] = undefined;
+  private mining: boolean = false;
   
   public turn(): Action | Falsy {
     this.step++;
@@ -79,21 +80,36 @@ class MyRobot extends BCAbstractRobot {
       this.firstTurn = false;
     }
 
+
+
+    if(this.mining === false) {
+      const currentLoc = [this.me.x, this.me.y];
+      for(const loc of this.karboniteLocations) {
+        if(currentLoc[0] === loc[0] && currentLoc[1] === loc[1]) {
+          this.mining = true;
+          this.log(">>> Mining >>>");
+          return(this.mine());
+        }
+      }
+
+      for(const loc of this.fuelLocations) {
+        if(currentLoc[0] === loc[0] && currentLoc[1] === loc[1]) {
+          return(this.mine());
+        }
+      }
+    }
+
+    if(this.mining === true && (this.me.karbonite < 20 || this.me.fuel < 100)) {
+      // If robot was mining last turn, and karbonite or fuel are below carry capacity.
+      this.log(">>> Mining >>>");
+      return(this.mine())
+    }
+    else {
+      this.mining = false;
+    }
+
     if (this.step % 2 === 0) {
       return pilgrimBuild(this);
-    }
-
-    const currentLoc = [this.me.x, this.me.y];
-    for(const loc of this.karboniteLocations) {
-      if(currentLoc[0] === loc[0] && currentLoc[1] === loc[1]) {
-        return(this.mine());
-      }
-    }
-
-    for(const loc of this.fuelLocations) {
-      if(currentLoc[0] === loc[0] && currentLoc[1] === loc[1]) {
-        return(this.mine());
-      }
     }
 
     const movement = this.randomValidLoc();
