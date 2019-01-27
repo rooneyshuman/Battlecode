@@ -58,7 +58,14 @@ class MyRobot extends BCAbstractRobot {
       }
 
       case SPECS.CASTLE: {
-        return castleBuild(this);
+        // If castle can't build, it tries to attack
+        if (this.karbonite >= 10) {
+          return castleBuild(this);
+        }
+        const attackingCoordinates = attackFirst(this);
+        if (attackingCoordinates) {
+          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
+        }
       }
     }
   }

@@ -32,8 +32,47 @@ function attackFirst(self) {
       robotToAttack[1] = rob.y - self.me.y;
       return robotToAttack;
     }
-    return null;
   }
+}
+
+function castleBuild(self) {
+  const units = [1, 2, 3, 4];
+  const buildLoc = self.randomValidLoc();
+  self.log(`Castle health: ${self.me.health}`);
+  // Repeat while castle has enough karbonite for at least one pilgrim
+  while (self.karbonite >= 10) {
+    const unitToBuild = units[Math.floor(Math.random() * units.length)];
+    switch (unitToBuild) {
+      case 1: {
+        if (self.karbonite >= 10) {
+          self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]})`);
+          return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
+        }
+      }
+      case 2: {
+        if (self.karbonite >= 20) {
+          self.log(`Building a crusader at (${buildLoc[0]}, ${buildLoc[1]})`);
+          return self.buildUnit(SPECS.CRUSADER, buildLoc[0], buildLoc[1]);
+        }
+      }
+      case 3: {
+        if (self.karbonite >= 25) {
+          self.log(`Building a prophet at (${buildLoc[0]}, ${buildLoc[1]})`);
+          return self.buildUnit(SPECS.PROPHET, buildLoc[0], buildLoc[1]);
+        }
+      }
+      case 4: {
+        if (self.karbonite >= 30) {
+          self.log(`Building a preacher at (${buildLoc[0]}, ${buildLoc[1]})`);
+          return self.buildUnit(SPECS.PREACHER, buildLoc[0], buildLoc[1]);
+        }
+      }
+    }
+  }
+}
+function pilgrimBuild(self) {
+  self.log(`Pilgrim health: ${self.me.health}`);
+  // Robot needs to be carrying resources to be able to build
 }
 
 class MyRobot extends BCAbstractRobot {
@@ -53,36 +92,49 @@ class MyRobot extends BCAbstractRobot {
   }
   turn() {
     this.step++;
+    const choice = this.randomValidLoc();
     switch (this.me.unit) {
       case SPECS.PILGRIM: {
-        this.log('Pilgrim');
-        break;
-      }
-      case SPECS.PREACHER: {
-        this.log('Preacher');
-        // Add unit handling in another function
-        break;
+        this.log(`Pilgrim health: ${this.me.health}`);
+        if (this.step % 2 === 0) {
+          return pilgrimBuild(this);
+        }
+        return this.move(choice[0], choice[1]);
       }
       case SPECS.CRUSADER: {
-        //this.log(`Crusader health: ${this.me.health}`);
+        this.log(`Crusader health: ${this.me.health}`);
         const attackingCoordinates = attackFirst(this);
-        const choice = this.randomValidLoc();
+        if (attackingCoordinates) {
+          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
+        }
+        return this.move(choice[0], choice[1]);
+      }
+      case SPECS.PROPHET: {
+        this.log(`Prophet health: ${this.me.health}`);
+        const attackingCoordinates = attackFirst(this);
+        if (attackingCoordinates) {
+          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
+        }
+        return this.move(choice[0], choice[1]);
+      }
+      case SPECS.PREACHER: {
+        this.log(`Preacher health: ${this.me.health}`);
+        const attackingCoordinates = attackFirst(this);
         if (attackingCoordinates) {
           return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
         }
         return this.move(choice[0], choice[1]);
       }
       case SPECS.CASTLE: {
-        return this.handleCastle();
+        // If castle can't build, it tries to attack
+        if (this.karbonite >= 10) {
+          return castleBuild(this);
+        }
+        const attackingCoordinates = attackFirst(this);
+        if (attackingCoordinates) {
+          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
+        }
       }
-    }
-  }
-  handleCastle() {
-    // this.log(`Castle health: ${this.me.health}`);
-    if (this.step % 10 === 0) {
-      const buildLoc = this.simpleValidLoc();
-      this.log(`Building a crusader at (${buildLoc[0]}, ${buildLoc[1]})`);
-      return this.buildUnit(SPECS.CRUSADER, buildLoc[0], buildLoc[1]);
     }
   }
   randomValidLoc() {
