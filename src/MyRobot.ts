@@ -51,6 +51,23 @@ class MyRobot extends BCAbstractRobot {
       this.fuelLocations = miningLocations(this.fuel_map);
       this.firstTurn = false;
     }
+
+    const currentLoc = [this.me.x, this.me.y];
+    for(const loc of this.karboniteLocations) {
+      if(currentLoc[0] === loc[0] && currentLoc[1] === loc[1]) {
+        return(this.mine());
+      }
+    }
+
+    for(const loc of this.fuelLocations) {
+      if(currentLoc[0] === loc[0] && currentLoc[1] === loc[1]) {
+        return(this.mine());
+      }
+    }
+
+    const movement = this.randomValidLoc();
+    return this.move(movement[0], movement[1]);
+
   }
 
   private handleCastle(): Action | Falsy {
