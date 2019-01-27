@@ -23,6 +23,7 @@ export function miningLocations(map: boolean[][]): number[][] {
  * A* is like Djikstra's 
  */
 export function pathFinder(map: boolean[][], start: number[], end: number[]) {
+  // TODO: Figure out a comparison function for the priority queue
   return 0
 }
 
