@@ -1,4 +1,4 @@
-import { miningLocations } from "../src/utils";
+import { miningLocations } from "../src/Mining";
 
 // let robot = new MyRobot();
 
