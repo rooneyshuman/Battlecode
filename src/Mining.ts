@@ -4,14 +4,23 @@
  * @returns { boolean [][] } Array containing elements that consist of [x , y]
  */
 export function miningLocations(map: boolean[][]): number[][] {
+  // FIXME: Not working for some reason.
   const locations = [];
   let i = 0;
   let j = 0;
   while(i < map.length) {
     // i is the x coord, j is the y coord.
-    const resourceLoc: number = map[i].indexOf(true, j);
-    locations.push([i, resourceLoc]);
-    j = resourceLoc;
+    while(j !== -1 && j < map.length) {
+      const resourceLoc: number = map[i].indexOf(true, j);
+      if(resourceLoc === -1) {
+        j = -1;
+      }
+      else {
+        locations.push([resourceLoc, i]);
+        j = resourceLoc + 1;
+      }
+    }
+    j = 0;
     i++;
   }
   return locations;

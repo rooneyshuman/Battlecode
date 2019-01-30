@@ -26,12 +26,12 @@ class MyRobot extends BCAbstractRobot {
     const choice: number[] = this.randomValidLoc();
     switch (this.me.unit) {
       case SPECS.PILGRIM: {
-        this.log("Pilgrim");
+        // this.log("Pilgrim");
         return this.handlePilgrim();
       }
       
       case SPECS.CRUSADER: {
-        this.log(`Crusader health: ${this.me.health}`);
+        // this.log(`Crusader health: ${this.me.health}`);
         const attackingCoordinates = attackFirst(this);
 
         if (attackingCoordinates) {
@@ -41,7 +41,7 @@ class MyRobot extends BCAbstractRobot {
       }
 
       case SPECS.PROPHET: {
-        this.log(`Prophet health: ${this.me.health}`);
+        // this.log(`Prophet health: ${this.me.health}`);
         const attackingCoordinates = attackFirst(this);
 
         if (attackingCoordinates) {
@@ -51,7 +51,7 @@ class MyRobot extends BCAbstractRobot {
       }
 
       case SPECS.PREACHER: {
-        this.log(`Preacher health: ${this.me.health}`);
+        // this.log(`Preacher health: ${this.me.health}`);
         const attackingCoordinates = attackFirst(this);
         if (attackingCoordinates) {
           return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
@@ -73,6 +73,7 @@ class MyRobot extends BCAbstractRobot {
   }
   
   private handlePilgrim(): Action | Falsy {
+    // let action: Action | Falsy = undefined;
     if (this.firstTurn === true) {
       this.log("FINDING > > >")
       this.karboniteLocations = miningLocations(this.karbonite_map);
@@ -80,32 +81,25 @@ class MyRobot extends BCAbstractRobot {
       this.firstTurn = false;
     }
 
-
-
-    if(this.mining === false) {
+    if(this.me.karbonite < 20 && this.me.fuel < 100) {
       const currentLoc = [this.me.x, this.me.y];
       for(const loc of this.karboniteLocations) {
         if(currentLoc[0] === loc[0] && currentLoc[1] === loc[1]) {
           this.mining = true;
-          this.log(">>> Mining >>>");
+          this.log(`${currentLoc} >>> Mining >>> ${loc}`);
           return(this.mine());
         }
       }
 
       for(const loc of this.fuelLocations) {
         if(currentLoc[0] === loc[0] && currentLoc[1] === loc[1]) {
+          this.mining = true;
+          this.log(`${currentLoc}>>> Mining >>> ${loc}`);
           return(this.mine());
         }
       }
-    }
-
-    if(this.mining === true && (this.me.karbonite < 20 || this.me.fuel < 100)) {
-      // If robot was mining last turn, and karbonite or fuel are below carry capacity.
-      this.log(">>> Mining >>>");
-      return(this.mine())
-    }
-    else {
-      this.mining = false;
+    } else {
+      // TODO: Make pilgrim walk back to castle if inventory is full.
     }
 
     if (this.step % 2 === 0) {
