@@ -138,19 +138,20 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
   // Simple BFS pathfinder
   // Does not find shortest diagonal path.
   // TODO: Make visiting and parent coord array
-  const extraInfoMap = buildExtraInfoMap(map);
+  const visited: boolean[][] = fillArray(map[0].length, false);
+  const parentCoord: number[][][] = fillArray(map[0].length, []);
   const moveQueue: number[][] = [];
-  const queue: MapItemInterface[] = [];
+  const queue: number[][] = [];
   const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
   let pathEnd;
 
-  queue.push(extraInfoMap[start[1]][start[0]]);
+  queue.push(start);
 
   while(queue.length !== 0) {
     const loc = queue.shift();
-    loc.visited = true;
+    visited[loc[1]][loc[0]] = true;
 
-    if(loc.x === dest[0] && loc.y === dest[1]) {
+    if(loc[0] === dest[0] && loc[1] === dest[1]) {
       pathEnd = loc;
       break;
     }
@@ -158,22 +159,22 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
     // Add to queue only if not visited already.
     for(let i = 0; i < 4; ++i) {
       // Add adjacent tiles
-      const newY = loc.y + directions[i][1];
-      const newX = loc.x + directions[i][0];
+      const newY = loc[1] + directions[i][1];
+      const newX = loc[0] + directions[i][0];
       // Edge checking
-      if((newY >= 0 && newY < extraInfoMap.length) && (newX >= 0 && newX < extraInfoMap.length)) {
-        const newLoc = extraInfoMap[newY][newX];
-        if(newLoc.visited !== true && newLoc.passable === true) {
+      if((newY >= 0 && newY < map[0].length) && (newX >= 0 && newX < map[0].length)) {
+        const newLoc = [newX, newY];
+        if(visited[newY][newX] !== true && map[newY][newX] === true) {
           // If not visited and is passable, push to queue.
-          newLoc.parent = loc;
+          parentCoord[newLoc[1]][newLoc[0]] = loc;
           queue.push(newLoc);
         }
       }
     }
   }
   while(pathEnd !== undefined) {
-    moveQueue.push([pathEnd.x, pathEnd.y]);
-    pathEnd = pathEnd.parent;
+    moveQueue.push(pathEnd);
+    pathEnd = parentCoord[pathEnd[1]][pathEnd[0]];
   }
   moveQueue.reverse();
   return moveQueue;
@@ -184,12 +185,12 @@ function calcDirection(p1: number[], p2: number[]): number {
   return ((angleRad * 180) / Math.PI);
 }
 
-export function fillFalse(max: number) {
+export function fillArray(max: number, el: any) {
   const temp = new Array(max);
   const result = new Array(max);
 
   for (let i = 0; i < max; ++i) {
-    temp[i] = false;
+    temp[i] = el;
   }
 
   for (let i = 0; i < max; ++i) {
