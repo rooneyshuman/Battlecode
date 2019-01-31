@@ -1,8 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst } from "./Attack";
 import { castleBuild, pilgrimBuild } from './BuildUnits';
-import { miningLocations } from "./Mining";
-import { randomValidLoc, simpleValidLoc } from "./utils";
+import { buildExtraInfoMap, MapItemInterface, miningLocations, randomValidLoc, simplePathFinder,  simpleValidLoc,  } from "./utils";
 
 class MyRobot extends BCAbstractRobot {
   private readonly adjChoices: number[][] = [
@@ -20,10 +19,14 @@ class MyRobot extends BCAbstractRobot {
   private karboniteLocations: number[][] = undefined;
   private fuelLocations: number[][] = undefined;
   private mining: boolean = false;
+  private destinationQueue: number[][] = [];
   private destination: number[] = undefined;
+  private prevLoc: number[] = undefined;
+  private prevMove: number[] = undefined;
   
   public turn(): Action | Falsy {
     const choice: number[] = randomValidLoc(this);
+
     switch (this.me.unit) {
       case SPECS.PILGRIM: {
         // this.log("Pilgrim");
@@ -81,7 +84,25 @@ class MyRobot extends BCAbstractRobot {
     if (this.me.turn === 1) {
       this.initializePilgrim();
     }
+    if(this.destination !== undefined) {
+      this.log("MOVING TO DESTINATION >> >>");
+      this.destinationQueue = simplePathFinder(this.map, [this.me.x, this.me.y], this.destination);
+      if(this.prevLoc[0] === this.me.x && this.prevLoc[1] === this.me.y) {
+        return this.move(this.prevMove[0], this.prevMove[1]);
+      }
 
+      if (this.destinationQueue.length > 0) {
+        const nextTile = this.destinationQueue.pop();
+        const moveX = nextTile[0] - this.me.x ;
+        const moveY = nextTile[1] - this.me.y;
+        this.prevLoc = [this.me.x, this.me.y];
+        this.prevMove = [moveX, moveY];
+        return this.move(moveX, moveY);
+      }
+
+      this.destination = undefined;
+    } 
+    
     if(this.me.karbonite < 20 && this.me.fuel < 100) {
       const currentLoc = [this.me.x, this.me.y];
       for(const loc of this.karboniteLocations) {
@@ -101,6 +122,8 @@ class MyRobot extends BCAbstractRobot {
       }
     } else {
       // TODO: Make pilgrim walk back to castle if inventory is full.
+      this.log("---FULL INVENTORY, RETURNING TO BASE---");
+      this.destination = this.storageLoc[0];
     }
 
     if (this.me.turn % 2 === 0) {
@@ -127,8 +150,7 @@ class MyRobot extends BCAbstractRobot {
       this.storageLoc.push([loc.x, loc.y]);
     }
   }
-
- 
+  
 }
 
 // Prevent Rollup from removing the entire class for being unused
