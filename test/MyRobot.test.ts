@@ -1,4 +1,4 @@
-import { buildExtraInfoMap, fillFalse, miningLocations, simplePathFinder } from "../src/utils";
+import { buildExtraInfoMap, miningLocations, simplePathFinder } from "../src/utils";
 
 // let robot = new MyRobot();
 
@@ -17,10 +17,5 @@ test("BFS", () => {
     const start = [0,0];
     const end = [2, 2];
     const path = simplePathFinder(testMap, start, end);
-})
-
-test.skip("fillFalse", () => {
-    const testMap = [[true, true, true], [true, true, true], [true, true, true]];
-    const testFalse = fillFalse(testMap.length);
-    expect(testFalse).toHaveLength(testMap.length);
+    // console.log(path);
 })

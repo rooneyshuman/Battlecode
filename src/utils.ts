@@ -71,7 +71,6 @@ export function randomValidLoc(self: BCAbstractRobot): number[] {
  * @returns { boolean [][] } Array containing elements that consist of [x , y]
  */
 export function miningLocations(map: boolean[][]): number[][] {
-  // FIXME: Not working for some reason.
   const locations = [];
   let i = 0;
   let j = 0;
@@ -146,6 +145,7 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
   let pathEnd;
 
   queue.push(start);
+  parentCoord[start[1]][start[0]] = start;
 
   while(queue.length !== 0) {
     const loc = queue.shift();
@@ -175,6 +175,11 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
   while(pathEnd !== undefined) {
     moveQueue.push(pathEnd);
     pathEnd = parentCoord[pathEnd[1]][pathEnd[0]];
+
+    if (pathEnd[0] === start[0] && pathEnd[1] === start[1]) {
+      pathEnd = undefined;
+      moveQueue.push(start);
+    }
   }
   moveQueue.reverse();
   return moveQueue;
