@@ -2,10 +2,9 @@ import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst } from "./Attack";
 import { castleBuild, pilgrimBuild } from './BuildUnits';
 import { miningLocations } from "./Mining";
+import { randomValidLoc, simpleValidLoc } from "./utils";
 
 class MyRobot extends BCAbstractRobot {
-  private step = 0;
-  private firstTurn: boolean= true;
   private readonly adjChoices: number[][] = [
       [0, -1],
       [1, -1],
@@ -16,14 +15,15 @@ class MyRobot extends BCAbstractRobot {
       [-1, 0],
       [-1, -1],
     ];
-
+  
+  private storageLoc: number[][] = [];
   private karboniteLocations: number[][] = undefined;
   private fuelLocations: number[][] = undefined;
   private mining: boolean = false;
+  private destination: number[] = undefined;
   
   public turn(): Action | Falsy {
-    this.step++;
-    const choice: number[] = this.randomValidLoc();
+    const choice: number[] = randomValidLoc(this);
     switch (this.me.unit) {
       case SPECS.PILGRIM: {
         // this.log("Pilgrim");
@@ -60,25 +60,26 @@ class MyRobot extends BCAbstractRobot {
       }
 
       case SPECS.CASTLE: {
-        // If castle can't build, it tries to attack
-        if (this.karbonite >= 10) {
-          return castleBuild(this);
-        }
-        const attackingCoordinates = attackFirst(this);
-        if (attackingCoordinates) {
-          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
-        }
+        return this.handleCastle();
       }
+    }
+  }
+
+  private handleCastle(): Action | Falsy {
+    // If castle can't build, it tries to attack
+    if (this.karbonite >= 10) {
+      return castleBuild(this);
+    }
+    const attackingCoordinates = attackFirst(this);
+    if (attackingCoordinates) {
+      return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
     }
   }
   
   private handlePilgrim(): Action | Falsy {
     // let action: Action | Falsy = undefined;
-    if (this.firstTurn === true) {
-      this.log("FINDING > > >")
-      this.karboniteLocations = miningLocations(this.karbonite_map);
-      this.fuelLocations = miningLocations(this.fuel_map);
-      this.firstTurn = false;
+    if (this.me.turn === 1) {
+      this.initializePilgrim();
     }
 
     if(this.me.karbonite < 20 && this.me.fuel < 100) {
@@ -102,55 +103,32 @@ class MyRobot extends BCAbstractRobot {
       // TODO: Make pilgrim walk back to castle if inventory is full.
     }
 
-    if (this.step % 2 === 0) {
+    if (this.me.turn % 2 === 0) {
       return pilgrimBuild(this);
     }
 
-    const movement = this.randomValidLoc();
+    const movement = randomValidLoc(this);
     return this.move(movement[0], movement[1]);
 
   }
 
+  private initializePilgrim() {
+    this.log("> > > FINDING THINGS > > >")
+    this.karboniteLocations = miningLocations(this.karbonite_map);
+    this.fuelLocations = miningLocations(this.fuel_map);
+    const visibleRobots = this.getVisibleRobots();
+    const castle = visibleRobots.filter((robot) => {
+      if( (robot.team === this.me.team) && (robot.unit === SPECS.CASTLE)) {
+        return robot;
+      }
+    });
 
-
-  private randomValidLoc(): number[] {
-    // TODO: Possibly check if a unit is in the desired space for movement?
-    const mapDim = this.map[0].length
-    let rand = Math.floor(Math.random() * this.adjChoices.length);
-    let loc = this.adjChoices[rand];
-    let counter = 0;
-
-    do {
-      if (this.me.y + loc[1] >= mapDim) {
-        loc[1] = -1;
-      }
-      if (this.me.y + loc[1] < 0) {
-        loc[1] = 1;
-      }
-      if (this.me.x + loc[0] >= mapDim) {
-        loc[0] = -1;
-      }
-      if (this.me.x + loc[0] < 0) {
-        loc[0] = 1;
-      }
-      rand = (rand + 1) % this.adjChoices.length;
-      counter++;
-    } while (!this.map[this.me.y + loc[1]][this.me.x + loc[0]] && counter < this.adjChoices.length);
-    if (counter >= this.adjChoices.length) {
-      loc = [0, 0];
+    for(const loc of castle) {
+      this.storageLoc.push([loc.x, loc.y]);
     }
-    return loc;
   }
 
-  private simpleValidLoc(): number[] {
-    let i = 0;
-    while (!this.map[this.me.y + this.adjChoices[i][1]][this.me.x + this.adjChoices[i][0]] && i < this.adjChoices.length) {
-      // Makes sure the terrain is passable.
-      // this.map is indexed as [y][x]
-      i++;
-    }
-    return this.adjChoices[i]
-  }
+ 
 }
 
 // Prevent Rollup from removing the entire class for being unused
