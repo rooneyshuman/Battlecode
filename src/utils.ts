@@ -137,6 +137,7 @@ export function buildExtraInfoMap(map: boolean[][]): MapItemInterface[][] {
 export function simplePathFinder(map: boolean[][], start: number[], dest: number[]): number[][] {
   // Simple BFS pathfinder
   // Does not find shortest diagonal path.
+  // TODO: Make visiting and parent coord array
   const extraInfoMap = buildExtraInfoMap(map);
   const moveQueue: number[][] = [];
   const queue: MapItemInterface[] = [];
