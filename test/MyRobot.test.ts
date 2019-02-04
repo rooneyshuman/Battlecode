@@ -1,4 +1,4 @@
-import { buildExtraInfoMap, miningLocations, simplePathFinder } from "../src/utils";
+import { closestCoords, fillArray, miningLocations,  simplePathFinder } from "../src/utils";
 
 // let robot = new MyRobot();
 
@@ -12,9 +12,16 @@ test("Mining Locations", () => {
     expect(locations[3]).toEqual([2, 2]);
 })
 
-test("BFS", () => {
-    const testMap = [[true, true, true], [true, true, true], [true, true, true]];
-    const start = [0,0];
+test("Closest Coords", () => {
+    const start = [0, 0];
+    const coords = [[2, 5], [3, 3], [1, 1]];
+    const closest = closestCoords(start, coords);
+    expect(closest).toEqual([1, 1]);
+});
+
+test("Pathfinding", () => {
+    const testMap = fillArray(3, true);
+    const start = [0, 0];
     const end = [2, 2];
     const path = simplePathFinder(testMap, start, end);
     // console.log(path);

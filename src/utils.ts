@@ -1,4 +1,5 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
+import { PriorityQueue } from './PriorityQueue';
 
 const adjChoices: number[][] = [
     [0, -1],
@@ -25,6 +26,8 @@ const east: number[][] = [
 
 const south: number[][] = north.map((el) => ([el[0] * -1, el[1] * -1]));
 const west: number[][] = east.map((el) => ([el[0] * -1, el[1] * -1]));
+
+const cardinalDirections = [[0, 1], [1, 0], [0, -1], [-1, 0]];
 
 export function simpleValidLoc(self: BCAbstractRobot): number[] {
     let i = 0;
@@ -102,90 +105,45 @@ export function pathFinder(map: boolean[][], start: number[], end: number[]) {
   return 0
 }
 
-function heuristic(a: number[], b: number[]) {
+function manhatDist(a: number[], b: number[]) {
   // Manhattan distance on a square grid.
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
 }
 
-export interface MapItemInterface {
-  x: number,
-  y: number,
-  passable: boolean,
-  visited: boolean
-  parent: MapItemInterface,
-}
-
-export function buildExtraInfoMap(map: boolean[][]): MapItemInterface[][] {
-  const result = [];
-  for(let y = 0; y < map.length; ++y) {
-    const row = [];
-    for(let x = 0; x < map.length; ++x) {
-      row.push({
-        x,
-        y,
-        passable: map[y][x],
-        visited: false,
-        parent: undefined,
-      });
-    }
-    result.push(row);
+export function closestCoords(start: number[], coords: number[][]) {
+  const distances = [];
+  for(const coord of coords) {
+    distances.push({
+      distance: manhatDist(start, coord),
+      coord,
+    });
   }
-  return result;
-}
-
-export function simplePathFinder(map: boolean[][], start: number[], dest: number[]): number[][] {
-  // Simple BFS pathfinder
-  // Does not find shortest diagonal path.
-  // TODO: Make visiting and parent coord array
-  const visited: boolean[][] = fillArray(map[0].length, false);
-  const parentCoord: number[][][] = fillArray(map[0].length, []);
-  const moveQueue: number[][] = [];
-  const queue: number[][] = [];
-  const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
-  let pathEnd;
-
-  queue.push(start);
-  parentCoord[start[1]][start[0]] = start;
-
-  while(queue.length !== 0) {
-    const loc = queue.shift();
-    visited[loc[1]][loc[0]] = true;
-
-    if(loc[0] === dest[0] && loc[1] === dest[1]) {
-      pathEnd = loc;
-      break;
-    }
-
-    // Add to queue only if not visited already.
-    for(let i = 0; i < 4; ++i) {
-      // Add adjacent tiles
-      const newY = loc[1] + directions[i][1];
-      const newX = loc[0] + directions[i][0];
-      // Edge checking
-      if((newY >= 0 && newY < map[0].length) && (newX >= 0 && newX < map[0].length)) {
-        const newLoc = [newX, newY];
-        if(visited[newY][newX] !== true && map[newY][newX] === true) {
-          // If not visited and is passable, push to queue.
-          parentCoord[newLoc[1]][newLoc[0]] = loc;
-          queue.push(newLoc);
-        }
-      }
+  let min = distances[0];
+  for(const dist of distances) {
+    if(dist.distance < min.distance) {
+      min = dist;
     }
   }
-  while(pathEnd !== undefined) {
-    moveQueue.push(pathEnd);
-    pathEnd = parentCoord[pathEnd[1]][pathEnd[0]];
-
-    if (pathEnd[0] === start[0] && pathEnd[1] === start[1]) {
-      pathEnd = undefined;
-      moveQueue.push(start);
-    }
-  }
-  moveQueue.reverse();
-  return moveQueue;
+  return min.coord;
 }
 
-function calcDirection(p1: number[], p2: number[]): number {
+function calcDirection(p1: number[], p2: number[]): number[][] {
+  const dir = calcDegDirection(p1, p2);
+  if(dir <= 90 && dir >= 270) {
+    return east;
+  }
+  if( dir >= 0 && dir <= 180) {
+    return north;
+  } 
+
+  if(dir >= 90 && dir <= 270) {
+    return west;
+  }
+
+  return south;
+}
+
+function calcDegDirection(p1: number[], p2: number[]): number {
   const angleRad = Math.atan((p2[1] - p1[1]) / (p2[0] - p1[0]));
   return ((angleRad * 180) / Math.PI);
 }
@@ -203,4 +161,113 @@ export function fillArray(max: number, el: any) {
   }
 
   return result;
+}
+
+export function randomDirectedMovement(self: BCAbstractRobot, start: number[], dest: number[]) {
+  const dir = calcDirection(start, dest);
+  let movement = randomValidDirectedLoc(self, dir);
+  if(movement[0] === 0 && movement[1] === 0) {
+    movement = randomValidLoc(self);
+  }
+  return movement;
+}
+
+function randomValidDirectedLoc(self: BCAbstractRobot, directions: number[][]): number[] {
+    // TODO: Possibly check if a unit is in the desired space for movement?
+    const mapDim = self.map[0].length
+    let rand = Math.floor(Math.random() * directions.length);
+    let loc = directions[rand];
+    let counter = 0;
+
+    do {
+      const bounds = checkBounds([self.me.x, self.me.y], loc, mapDim)
+      if(bounds[0] === false) {
+        loc[0] = 0;
+      }
+      if(bounds[1] === false) {
+        loc[1] = 0;
+      }
+      if(bounds[0] === false && bounds[1] === false) {
+        rand = Math.floor(Math.random() * directions.length);
+        loc = directions[rand];
+      }
+      counter++;
+      // Later change to rotate the directions instead of random
+    } while (!self.map[self.me.y + loc[1]][self.me.x + loc[0]] && counter < adjChoices.length);
+    if (counter >= directions.length) {
+      loc = [0, 0];
+    }
+    return loc;
+}
+
+function checkBounds(start: number[], toAdd: number[], mapDim: number) {
+  const result = [true, true];
+  if (start[1] + toAdd[1] >= mapDim) {
+    result[1] = false; 
+  }
+  if (start[1] + toAdd[1] < 0) {
+    result[1] = false; 
+  }
+  if (start[0] + toAdd[0] >= mapDim) {
+    result[0] = true;
+  }
+  if (start[0] + toAdd[0] < 0) {
+    result[0] = true;
+  }
+  return result;
+}
+
+export function simplePathFinder(map: boolean[][], start: number[], dest: number[]): number[][] {
+  // Simple BFS pathfinder
+  // Really bad.
+  const visited: boolean[][] = fillArray(map[0].length, false);
+  const parentCoord: number[][][] = fillArray(map[0].length, []);
+  const moveQueue: number[][] = [];
+  const queue: number[][] = [];
+  const directions = cardinalDirections;
+  let pathEnd;
+
+  queue.push(start);
+  parentCoord[start[1]][start[0]] = start;
+
+  while(queue.length !== 0) {
+    const loc = queue.shift();
+    visited[loc[1]][loc[0]] = true;
+
+    if(loc[0] === dest[0] && loc[1] === dest[1]) {
+      pathEnd = loc;
+      break;
+    }
+    // Add to queue only if not visited already and closest.
+      const candidates = directions.map((val) => {
+        return [val[0] + loc[0], val[1] + loc[1]];
+      });
+    for(const candidate of candidates) {
+      // Edge checking
+      if((candidate[1] >= 0 && candidate[1] < map[0].length) && (candidate[0] >= 0 && candidate[0] < map[0].length)) {
+        // TODO: replace newx, newy with candidates
+        const newLoc = [candidate[0], candidate[1]];
+        // FIXME: Check this conditional
+        // TODO: Finish implementation
+        if(visited[newLoc[1]][newLoc[0]] !== true && map[newLoc[1]][newLoc[0]] === true) {
+          // If not visited and is passable, push to queue.
+          parentCoord[newLoc[1]][newLoc[0]] = loc;
+          // TODO: Only push if closest successor.
+          const possible = closestCoords(loc, candidates);
+          queue.push(newLoc);
+        }
+      }
+    }
+  }
+  while(pathEnd !== undefined) {
+    moveQueue.push(pathEnd);
+    pathEnd = parentCoord[pathEnd[1]][pathEnd[0]];
+
+    if (pathEnd[0] === start[0] && pathEnd[1] === start[1]) {
+      pathEnd = undefined;
+      moveQueue.push(start);
+    }
+  }
+  moveQueue.reverse();
+  return moveQueue;
 }

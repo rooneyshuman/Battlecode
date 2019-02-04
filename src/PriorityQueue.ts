@@ -1,10 +1,15 @@
+interface HeapItem {
+  coord: number[],
+  priority: number,
+}
+
 export class PriorityQueue {
   // Taken from stackoverflow
-  private comparator: (a: any, b: any) => boolean;
-  private heap: number[][];
+  private comparator: (a: HeapItem, b: HeapItem) => boolean;
+  private heap: HeapItem[];
   private readonly top: number = 0;
 
-  constructor(comparator = (a: any, b: any) => a > b) {
+  constructor(comparator = (a: HeapItem, b: HeapItem) => a.priority > b.priority) {
     this.heap = [];
     // TODO: use the heuristic function for comparison(?)
     this.comparator = comparator;
@@ -14,18 +19,18 @@ export class PriorityQueue {
     return this.heap.length;
   }
 
-  public insert(...values: number[][]): void {
+  public insert(...values: HeapItem[]): void {
     values.forEach((value) => {
       this.heap.push(value);
       this.sortUp();
     });
   }
 
-  public peek(): number[] {
+  public peek(): HeapItem {
     return this.heap[this.top];
   }
 
-  public pop(): number[] {
+  public pop(): HeapItem {
     const bottom = this.size() - 1;
     if(bottom > this.top) {
       this.swap(this.top, bottom);
@@ -33,7 +38,7 @@ export class PriorityQueue {
     return this.heap[this.top];
   }
 
-  public replace(val: number[]): number[] {
+  public replace(val: HeapItem): HeapItem {
       const replacedValue = this.peek();
       this.heap[this.top] = val;
       this.sortDown();
