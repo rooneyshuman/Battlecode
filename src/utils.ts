@@ -221,17 +221,26 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
   // Simple BFS pathfinder
   // Really bad.
   const visited: boolean[][] = fillArray(map[0].length, false);
+  const gScore: number[][] = fillArray(map[0].length, Infinity);
+  const fScore: number[][] = fillArray(map[0].length, Infinity);
+
   const parentCoord: number[][][] = fillArray(map[0].length, []);
   const moveQueue: number[][] = [];
-  const queue: number[][] = [];
+  const queue = new PriorityQueue();
   const directions = cardinalDirections;
   let pathEnd;
 
-  queue.push(start);
+  queue.insert({
+    coord: start,
+    priority: 0,
+  });
+  gScore[start[1]][start[0]] = 0;
+  fScore[start[1]][start[0]] = manhatDist(start, dest);
   parentCoord[start[1]][start[0]] = start;
 
-  while(queue.length !== 0) {
-    const loc = queue.shift();
+  while(queue.size() !== 0) {
+    const nextHeapitem = queue.pop();
+    const loc = nextHeapitem.coord
     visited[loc[1]][loc[0]] = true;
 
     if(loc[0] === dest[0] && loc[1] === dest[1]) {
@@ -243,18 +252,16 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
         return [val[0] + loc[0], val[1] + loc[1]];
       });
     for(const candidate of candidates) {
-      // Edge checking
+      // Check bounds
       if((candidate[1] >= 0 && candidate[1] < map[0].length) && (candidate[0] >= 0 && candidate[0] < map[0].length)) {
-        // TODO: replace newx, newy with candidates
-        const newLoc = [candidate[0], candidate[1]];
-        // FIXME: Check this conditional
-        // TODO: Finish implementation
-        if(visited[newLoc[1]][newLoc[0]] !== true && map[newLoc[1]][newLoc[0]] === true) {
+        // Check visit and passable
+        if(visited[candidate[1]][candidate[0]] !== true && map[candidate[1]][candidate[0]] === true) {
           // If not visited and is passable, push to queue.
-          parentCoord[newLoc[1]][newLoc[0]] = loc;
-          // TODO: Only push if closest successor.
-          const possible = closestCoords(loc, candidates);
-          queue.push(newLoc);
+          parentCoord[candidate[1]][candidate[0]] = loc;
+          queue.insert({
+            coord: candidate,
+            priority: manhatDist(candidate, dest),
+          });
         }
       }
     }

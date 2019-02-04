@@ -49,9 +49,13 @@ export class PriorityQueue {
     return this.comparator(this.heap[i], this.heap[j]);
   }
 
+  private lesser(i: number, j:number): boolean {
+    return !this.comparator(this.heap[i], this.heap[j]);
+  }
+
   private sortUp(): void {
     let node = this.size() - 1;
-    while(node > this.top && this.greater(node , this.parent(node))) {
+    while(node > this.top && this.lesser(node , this.parent(node))) {
       const parent = this.parent(node);
       this.swap(node, parent);
       node = parent;
@@ -61,12 +65,12 @@ export class PriorityQueue {
   private sortDown(): void {
     let node = this.top;
     while(
-      (this.left(node) < this.size() && this.greater(this.left(node), node)) ||
-      (this.right(node) < this.size() && this.greater(this.right(node), node))
+      (this.left(node) < this.size() && this.lesser(this.left(node), node)) ||
+      (this.right(node) < this.size() && this.lesser(this.right(node), node))
     ) {
-      const maxChild = (this.right(node) < this.size() && this.greater(this.right(node), this.left(node))) ? this.right(node) : this.left(node)
-      this.swap(node, maxChild);
-      node = maxChild;
+      const minChild = (this.right(node) < this.size() && this.lesser(this.right(node), this.left(node))) ? this.right(node) : this.left(node)
+      this.swap(node, minChild);
+      node = minChild;
     }
   }
 
