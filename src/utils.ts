@@ -249,3 +249,17 @@ export function findClosestFriendlyCastles(self: BCAbstractRobot) {
   }
   return closestCoords([self.me.x, self.me.y], storageLocs); 
 }
+
+/**
+ * Finds the number of visible pilgrims
+ * @param { BCAbstractRobot } self
+ * @returns { number } number of pilgrims in vision radius, -1 if none
+ */
+export function visiblePilgrims(self: BCAbstractRobot): number {
+  const visibleRobots = self.getVisibleRobots();
+
+  function isPilgrim(robot: any){
+    return robot.team === self.me.team && robot.unit === SPECS.PILGRIM;
+  }
+  return visibleRobots.filter(isPilgrim).length;
+}
