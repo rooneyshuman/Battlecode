@@ -26,16 +26,23 @@ export class PriorityQueue {
     });
   }
 
+  public empty() {
+    this.heap = [];
+  }
+
   public peek(): HeapItem {
     return this.heap[this.top];
   }
 
   public pop(): HeapItem {
+    const poppedValue = this.peek();
     const bottom = this.size() - 1;
     if(bottom > this.top) {
       this.swap(this.top, bottom);
     }
-    return this.heap[this.top];
+    this.heap.pop(); // Literally remove the item from the array.
+    this.sortDown();
+    return poppedValue;
   }
 
   public replace(val: HeapItem): HeapItem {
@@ -55,7 +62,7 @@ export class PriorityQueue {
 
   private sortUp(): void {
     let node = this.size() - 1;
-    while(node > this.top && this.lesser(node , this.parent(node))) {
+    while(node > this.top && this.lesser(node, this.parent(node))) {
       const parent = this.parent(node);
       this.swap(node, parent);
       node = parent;
@@ -68,7 +75,7 @@ export class PriorityQueue {
       (this.left(node) < this.size() && this.lesser(this.left(node), node)) ||
       (this.right(node) < this.size() && this.lesser(this.right(node), node))
     ) {
-      const minChild = (this.right(node) < this.size() && this.lesser(this.right(node), this.left(node))) ? this.right(node) : this.left(node)
+      const minChild = (this.right(node) < this.size() && this.lesser(this.right(node), this.left(node))) ? this.right(node) : this.left(node);
       this.swap(node, minChild);
       node = minChild;
     }

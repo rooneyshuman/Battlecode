@@ -221,21 +221,21 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
   // Simple BFS pathfinder
   // Really bad.
   const visited: boolean[][] = fillArray(map[0].length, false);
-  const gScore: number[][] = fillArray(map[0].length, Infinity);
-  const fScore: number[][] = fillArray(map[0].length, Infinity);
+  // const gScore: number[][] = fillArray(map[0].length, Infinity);
+  // const fScore: number[][] = fillArray(map[0].length, Infinity);
 
   const parentCoord: number[][][] = fillArray(map[0].length, []);
   const moveQueue: number[][] = [];
   const queue = new PriorityQueue();
-  const directions = cardinalDirections;
+  const directions = adjChoices;
   let pathEnd;
 
   queue.insert({
     coord: start,
-    priority: 0,
+    priority: manhatDist(start, dest),
   });
-  gScore[start[1]][start[0]] = 0;
-  fScore[start[1]][start[0]] = manhatDist(start, dest);
+  // gScore[start[1]][start[0]] = 0;
+  // fScore[start[1]][start[0]] = manhatDist(start, dest);
   parentCoord[start[1]][start[0]] = start;
 
   while(queue.size() !== 0) {
@@ -258,6 +258,8 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
         if(visited[candidate[1]][candidate[0]] !== true && map[candidate[1]][candidate[0]] === true) {
           // If not visited and is passable, push to queue.
           parentCoord[candidate[1]][candidate[0]] = loc;
+
+          const test = manhatDist(candidate, dest);
           queue.insert({
             coord: candidate,
             priority: manhatDist(candidate, dest),
