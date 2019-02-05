@@ -16,11 +16,16 @@ const cardinalDirections = [[0, 1], [1, 0], [0, -1], [-1, 0]];
 
 export function simpleValidLoc(self: BCAbstractRobot): number[] {
     let i = 0;
-    while (!self.map[self.me.y + adjChoices[i][1]][self.me.x + adjChoices[i][0]] && i < adjChoices.length) {
-      // Makes sure the terrain is passable.
-      // self.map is indexed as [y][x]
-      i++;
+    let bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
+    while((bounds[0] !== true) && (bounds[1] !== true) && (i < adjChoices.length)) {
+      // While adjChoices[i] is out of bounds, iterate through i.
+      i += 1;
+      bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
     }
+    if(i > adjChoices.length) {
+      return [0, 0];
+    }
+
     return adjChoices[i];
 }
 
@@ -58,26 +63,19 @@ export function randomValidLoc(self: BCAbstractRobot): number[] {
  * @param { boolean [][] } map
  * @returns { boolean [][] } Array containing elements that consist of [x , y]
  */
-export function miningLocations(map: boolean[][]): number[][] {
+export function closestMiningLocation(loc: number[], map: boolean[][]): number[] {
   const locations = [];
-  let i = 0;
-  let j = 0;
-  while(i < map.length) {
-    // i is the x coord, j is the y coord.
-    while(j !== -1 && j < map.length) {
-      const resourceLoc: number = map[i].indexOf(true, j);
-      if(resourceLoc === -1) {
-        j = -1;
-      }
-      else {
-        locations.push([resourceLoc, i]);
-        j = resourceLoc + 1;
+  let closestDist = Infinity;
+  let closestLoc;
+  for(let y = 0; y < map.length; y++) {
+    for(let x = 0; x < map.length; x++) {
+      if(map[y][x] && (manhatDist([x, y], loc) < closestDist)) {
+        closestDist = manhatDist([x, y], loc);
+        closestLoc = [x, y];
       }
     }
-    j = 0;
-    i++;
   }
-  return locations;
+  return closestLoc;
 }
 
 function manhatDist(a: number[], b: number[]) {
@@ -199,6 +197,21 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
       moveQueue.push(start);
     }
   }
-  moveQueue.reverse();
+  // moveQueue.reverse();
   return moveQueue;
+}
+
+export function findClosestFriendlyCastles(self: BCAbstractRobot) {
+  const storageLocs: number[][] = [];
+  const visibleRobots = self.getVisibleRobots();
+  const castles = visibleRobots.filter((robot) => {
+    if( (robot.team === self.me.team) && (robot.unit === SPECS.CASTLE)) {
+      return robot;
+    }
+  });
+
+  for(const loc of castles) {
+    storageLocs.push([loc.x, loc.y]);
+  }
+  return closestCoords([self.me.x, self.me.y], storageLocs); 
 }
