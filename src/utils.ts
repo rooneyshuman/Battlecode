@@ -92,7 +92,7 @@ export function closestMiningLocation(loc: number[], map: boolean[][]): number[]
  * @param { number [] } locationA, { number [] } locationB 
  * @returns { number } Manhattan distance between A and B
  */
-function manhatDist(a: number[], b: number[]) {
+export function manhatDist(a: number[], b: number[]) {
   // Manhattan distance on a square grid.
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
 }

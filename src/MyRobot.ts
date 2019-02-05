@@ -1,7 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst } from "./Attack";
 import { castleBuild, pilgrimBuild } from './BuildUnits';
-import {closestCoords, closestMiningLocation, findClosestFriendlyCastles,  randomValidLoc, simplePathFinder, simpleValidLoc } from "./utils";
+import {closestCoords, closestMiningLocation, findClosestFriendlyCastles, manhatDist, randomValidLoc, simplePathFinder, simpleValidLoc} from "./utils";
 
 class MyRobot extends BCAbstractRobot {
   private readonly adjChoices: number[][] = [
@@ -101,6 +101,12 @@ class MyRobot extends BCAbstractRobot {
       this.log("---FULL INVENTORY, RETURNING TO BASE---");
       this.goMining = false;
       const closestCastle = findClosestFriendlyCastles(this);
+      if (manhatDist(closestCastle, [this.me.x, this.me.y]) <= 2){
+        const dx = closestCastle[0] - this.me.x;
+        const dy = closestCastle[1] - this.me.y;
+        this.log(`GIVING RESOURCES TO CASTLE [${dx},${dy}] AWAY`); 
+        return this.give(dx, dy, this.me.karbonite, this.me.fuel);
+      }
       const validLoc = simpleValidLoc(this);
       this.destination = [closestCastle[0] + validLoc[0], closestCastle[1] + validLoc[1]];
     }
