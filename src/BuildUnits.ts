@@ -1,8 +1,9 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
+import { randomValidLoc } from "./utils";
 
-export function castleBuild(self: any): BuildAction | Falsy {
+export function castleBuild(self: BCAbstractRobot): BuildAction | Falsy {
     const units: number[] = [1, 2, 3, 4];
-    const buildLoc: number[] = self.randomValidLoc();
+    const buildLoc: number[] = randomValidLoc(self);
 
     self.log(`Castle health: ${self.me.health}`);
 
