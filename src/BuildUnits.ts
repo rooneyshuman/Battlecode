@@ -7,29 +7,29 @@ export function castleBuild(self: BCAbstractRobot): BuildAction | Falsy {
 
     self.log(`Castle health: ${self.me.health}`);
 
+    // Have each castle build pilgrims in first 2 turns
+    if (self.me.turn < 2) {
+        self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]})`);
+        return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
+    }
+
     // Repeat while castle has enough karbonite for at least one pilgrim
     while(self.karbonite >=10) {
         const unitToBuild = units[Math.floor(Math.random() * units.length)];
         switch (unitToBuild) {
             case 1: {
-                if (self.karbonite >= 10) {
-                    self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]})`);
-                    return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
-                }
-            }
-            case 2: {
                 if (self.karbonite >= 20) {
                     self.log(`Building a crusader at (${buildLoc[0]}, ${buildLoc[1]})`);
                     return self.buildUnit(SPECS.CRUSADER, buildLoc[0], buildLoc[1]);
                 }
             }
-            case 3: {
+            case 2: {
                 if (self.karbonite >= 25) {
                     self.log(`Building a prophet at (${buildLoc[0]}, ${buildLoc[1]})`);
                     return self.buildUnit(SPECS.PROPHET, buildLoc[0], buildLoc[1]);
                 }
             }
-            case 4: {
+            case 3: {
                 if (self.karbonite >= 30) {
                     self.log(`Building a preacher at (${buildLoc[0]}, ${buildLoc[1]})`);
                     return self.buildUnit(SPECS.PREACHER, buildLoc[0], buildLoc[1]);
