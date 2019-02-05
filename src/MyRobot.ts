@@ -1,7 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst } from "./Attack";
 import { castleBuild, pilgrimBuild } from './BuildUnits';
-import {closestCoords, closestMiningLocation, findClosestFriendlyCastles, manhatDist, randomValidLoc, simplePathFinder, simpleValidLoc} from "./utils";
+import {closestCoords, closestMiningLocation, findClosestFriendlyCastles, manhatDist, randomValidLoc, simplePathFinder, simpleValidLoc, visiblePilgrims} from "./utils";
 
 class MyRobot extends BCAbstractRobot {
   private readonly adjChoices: number[][] = [
@@ -16,8 +16,9 @@ class MyRobot extends BCAbstractRobot {
     ];
   
   private storageLoc: number[][] = [];
-  private karboniteLocation: number[] = undefined;
-  private fuelLocation: number[] = undefined;
+  // private karboniteLocation: number[] = undefined;
+  // private fuelLocation: number[] = undefined;
+  private resourceLocation: number[] = undefined;
   private goMining: boolean = false;
   private destinationQueue: number[][] = [];
   private destination: number[] = undefined;
@@ -68,6 +69,14 @@ class MyRobot extends BCAbstractRobot {
   }
 
   private handleCastle(): Action | Falsy {
+    // Castle build pilgrims at first 2 turns
+    if (this.me.turn < 3){
+      const buildLoc: number[] = randomValidLoc(this);
+      // Have each castle build pilgrims in first 2 turns
+      this.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${this.me.turn})`);
+      return this.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
+    }
+    
     // If castle can't build, it tries to attack
     if (this.karbonite >= 10) {
       return castleBuild(this);
@@ -88,7 +97,7 @@ class MyRobot extends BCAbstractRobot {
     if(this.destination === undefined) {
       // Calculate closest karbonite/fuel location.
       this.log(" > > > FINDING CLOSEST MINING SPOT > > >");
-      this.destination = this.karboniteLocation;
+      this.destination = this.resourceLocation;
       this.destinationQueue = simplePathFinder(this.map, [this.me.x, this.me.y], this.destination);
       this.nextMove = this.destinationQueue.pop();
       this.goMining = true;
@@ -101,10 +110,14 @@ class MyRobot extends BCAbstractRobot {
       this.log("---FULL INVENTORY, RETURNING TO BASE---");
       this.goMining = false;
       const closestCastle = findClosestFriendlyCastles(this);
-      if (manhatDist(closestCastle, [this.me.x, this.me.y]) <= 2){
-        const dx = closestCastle[0] - this.me.x;
-        const dy = closestCastle[1] - this.me.y;
-        this.log(`GIVING RESOURCES TO CASTLE [${dx},${dy}] AWAY`); 
+      const dx = closestCastle[0] - this.me.x;
+      const dy = closestCastle[1] - this.me.y;
+      const dist = Math.pow(dx, 2) + Math.pow(dy, 2);
+
+      // If castle is in adjacent square, give resources
+      if (dist <= 2){
+        this.log(`GIVING RESOURCES TO CASTLE [${dx},${dy}] AWAY`);
+
         return this.give(dx, dy, this.me.karbonite, this.me.fuel);
       }
       const validLoc = simpleValidLoc(this);
@@ -146,13 +159,15 @@ class MyRobot extends BCAbstractRobot {
     }
   }
 
+  // TODO: Fix bug. Resource locations are only being set to fuel
   private initializePilgrim() {
     this.log("> > > FINDING THINGS > > >")
-    this.karboniteLocation = closestMiningLocation([this.me.x, this.me.y], this.karbonite_map);
-    this.fuelLocation = closestMiningLocation([this.me.x, this.me.y], this.fuel_map);
-    this.log(`KARB LOC: ${this.karboniteLocation}`);
+    // 1st pilgrim mines karbonite. 2nd pilgrim mines fuel
+    this.resourceLocation = (visiblePilgrims(this) < 1) ?
+    closestMiningLocation([this.me.x, this.me.y], this.karbonite_map) :
+    closestMiningLocation([this.me.x, this.me.y], this.fuel_map);
+    this.log(`RESRC LOC: ${this.resourceLocation}, pilnum${visiblePilgrims(this)}`);
   }
-  
 }
 
 // Prevent Rollup from removing the entire class for being unused
