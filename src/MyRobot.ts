@@ -1,7 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst } from "./Attack";
 import { castleBuild, pilgrimBuild } from './BuildUnits';
-import {closestCoords, miningLocations, randomDirectedMovement, randomValidLoc, simpleValidLoc } from "./utils";
+import {closestCoords, miningLocations, randomValidLoc, simplePathFinder, simpleValidLoc } from "./utils";
 
 class MyRobot extends BCAbstractRobot {
   private readonly adjChoices: number[][] = [
@@ -21,8 +21,7 @@ class MyRobot extends BCAbstractRobot {
   private mining: boolean = false;
   private destinationQueue: number[][] = [];
   private destination: number[] = undefined;
-  private prevLoc: number[] = undefined;
-  private prevMove: number[] = undefined;
+  private nextMove: number[] = undefined;
   
   public turn(): Action | Falsy {
     const choice: number[] = randomValidLoc(this);
@@ -88,10 +87,13 @@ class MyRobot extends BCAbstractRobot {
     if(this.destination === undefined) {
       // Calculate closest karbonite/fuel location.
       this.destination = closestCoords([this.me.x, this.me.y], this.karboniteLocations);
+      this.destinationQueue = simplePathFinder(this.map, [this.me.x, this.me.y], this.destination);
+      this.nextMove = this.destinationQueue.pop();
     }
     
     if(this.destination !== undefined && (this.me.x === this.destination[0] && this.me.y === this.destination[1])) {
       // If on destination
+      // TODO: A mining flag?
       this.destination = undefined;
       return(this.mine());
     }
@@ -101,14 +103,6 @@ class MyRobot extends BCAbstractRobot {
       this.log("---FULL INVENTORY, RETURNING TO BASE---");
       this.destination = closestCoords([this.me.x, this.me.y], this.storageLoc);
     }
-
-
-    if(this.destination !== undefined) {
-      this.log("MOVING TO DESTINATION >> >>");
-      const nextMove = randomDirectedMovement(this, [this.me.x, this.me.y], this.destination);
-      this.log(nextMove);
-      return this.move(nextMove[0], nextMove[1]);
-    } 
 
     if (this.me.turn % 2 === 0) {
       // return pilgrimBuild(this);
@@ -122,6 +116,7 @@ class MyRobot extends BCAbstractRobot {
     this.log("> > > FINDING THINGS > > >")
     this.karboniteLocations = miningLocations(this.karbonite_map);
     this.fuelLocations = miningLocations(this.fuel_map);
+
     const visibleRobots = this.getVisibleRobots();
     const castle = visibleRobots.filter((robot) => {
       if( (robot.team === this.me.team) && (robot.unit === SPECS.CASTLE)) {

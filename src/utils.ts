@@ -3,29 +3,14 @@ import { PriorityQueue } from './PriorityQueue';
 
 const adjChoices: number[][] = [
     [0, -1],
-    [1, -1],
-    [1, 0],
-    [1, 1],
-    [0, 1],
-    [-1, 1],
-    [-1, 0],
     [-1, -1],
+    [-1, 0],
+    [-1, 1],
+    [0, 1],
+    [1, 1],
+    [1, 0],
+    [1, -1],
 ];
-
-const north: number[][] = [
-  [-1, 1],
-  [0, 1],
-  [1, 1]
-];
-
-const east: number[][] = [
-  [1, 1],
-  [1, 0],
-  [1, -1]
-]
-
-const south: number[][] = north.map((el) => ([el[0] * -1, el[1] * -1]));
-const west: number[][] = east.map((el) => ([el[0] * -1, el[1] * -1]));
 
 const cardinalDirections = [[0, 1], [1, 0], [0, -1], [-1, 0]];
 
@@ -95,16 +80,6 @@ export function miningLocations(map: boolean[][]): number[][] {
   return locations;
 }
 
-/**
- * Uses A* algorithm to find the shortest path between start and end
- * Credit: Amit Patel, reblobgames, A* algorithm
- * A* is like Djikstra's 
- */
-export function pathFinder(map: boolean[][], start: number[], end: number[]) {
-  // TODO: Figure out a comparison function for the priority queue
-  return 0
-}
-
 function manhatDist(a: number[], b: number[]) {
   // Manhattan distance on a square grid.
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
@@ -127,22 +102,6 @@ export function closestCoords(start: number[], coords: number[][]) {
   return min.coord;
 }
 
-function calcDirection(p1: number[], p2: number[]): number[][] {
-  const dir = calcDegDirection(p1, p2);
-  if(dir <= 90 && dir >= 270) {
-    return east;
-  }
-  if( dir >= 0 && dir <= 180) {
-    return north;
-  } 
-
-  if(dir >= 90 && dir <= 270) {
-    return west;
-  }
-
-  return south;
-}
-
 function calcDegDirection(p1: number[], p2: number[]): number {
   const angleRad = Math.atan((p2[1] - p1[1]) / (p2[0] - p1[0]));
   return ((angleRad * 180) / Math.PI);
@@ -161,43 +120,6 @@ export function fillArray(max: number, el: any) {
   }
 
   return result;
-}
-
-export function randomDirectedMovement(self: BCAbstractRobot, start: number[], dest: number[]) {
-  const dir = calcDirection(start, dest);
-  let movement = randomValidDirectedLoc(self, dir);
-  if(movement[0] === 0 && movement[1] === 0) {
-    movement = randomValidLoc(self);
-  }
-  return movement;
-}
-
-function randomValidDirectedLoc(self: BCAbstractRobot, directions: number[][]): number[] {
-    // TODO: Possibly check if a unit is in the desired space for movement?
-    const mapDim = self.map[0].length
-    let rand = Math.floor(Math.random() * directions.length);
-    let loc = directions[rand];
-    let counter = 0;
-
-    do {
-      const bounds = checkBounds([self.me.x, self.me.y], loc, mapDim)
-      if(bounds[0] === false) {
-        loc[0] = 0;
-      }
-      if(bounds[1] === false) {
-        loc[1] = 0;
-      }
-      if(bounds[0] === false && bounds[1] === false) {
-        rand = Math.floor(Math.random() * directions.length);
-        loc = directions[rand];
-      }
-      counter++;
-      // Later change to rotate the directions instead of random
-    } while (!self.map[self.me.y + loc[1]][self.me.x + loc[0]] && counter < adjChoices.length);
-    if (counter >= directions.length) {
-      loc = [0, 0];
-    }
-    return loc;
 }
 
 function checkBounds(start: number[], toAdd: number[], mapDim: number) {
