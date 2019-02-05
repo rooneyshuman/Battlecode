@@ -14,6 +14,11 @@ const adjChoices: number[][] = [
 
 const cardinalDirections = [[0, 1], [1, 0], [0, -1], [-1, 0]];
 
+/**
+ * Finds an in-bounds location adjacent to our robot
+ * @param { BCAbstractRobot } self
+ * @returns { number [] } Array containing elements that consist of [x , y]
+ */
 export function simpleValidLoc(self: BCAbstractRobot): number[] {
     let i = 0;
     let bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
@@ -23,12 +28,17 @@ export function simpleValidLoc(self: BCAbstractRobot): number[] {
       bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
     }
     if(i > adjChoices.length) {
-      return [0, 0];
+      return [0, 1];
     }
 
     return adjChoices[i];
 }
 
+/**
+ * Finds an in-bounds random location adjacent to our robot
+ * @param { BCAbstractRobot } self
+ * @returns { number [] } Array containing elements that consist of [x , y]
+ */
 export function randomValidLoc(self: BCAbstractRobot): number[] {
     // TODO: Possibly check if a unit is in the desired space for movement?
     const mapDim = self.map[0].length
@@ -53,18 +63,17 @@ export function randomValidLoc(self: BCAbstractRobot): number[] {
       counter++;
     } while (!self.map[self.me.y + loc[1]][self.me.x + loc[0]] && counter < adjChoices.length);
     if (counter >= adjChoices.length) {
-      loc = [0, 0];
+      loc = [0, 1];
     }
     return loc;
   }
 
 /**
- * Finds locations for the given map
- * @param { boolean [][] } map
- * @returns { boolean [][] } Array containing elements that consist of [x , y]
+ * Finds closest mining location for the given map
+ * @param { number [] } myLocation, { boolean [][] } resourceMap
+ * @returns { number [] } Array containing elements that consist of [x , y]
  */
 export function closestMiningLocation(loc: number[], map: boolean[][]): number[] {
-  const locations = [];
   let closestDist = Infinity;
   let closestLoc;
   for(let y = 0; y < map.length; y++) {
@@ -78,11 +87,21 @@ export function closestMiningLocation(loc: number[], map: boolean[][]): number[]
   return closestLoc;
 }
 
+/**
+ * Finds manhattan distance between two locations
+ * @param { number [] } locationA, { number [] } locationB 
+ * @returns { number } Manhattan distance between A and B
+ */
 function manhatDist(a: number[], b: number[]) {
   // Manhattan distance on a square grid.
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
 }
 
+/**
+ * Finds closest coordinates in an array of locations to a starting point
+ * @param { number [] } start, { number [][] } locations
+ * @returns { number [][]} coordinates of closest location
+ */
 export function closestCoords(start: number[], coords: number[][]) {
   const distances = [];
   for(const coord of coords) {
@@ -100,6 +119,11 @@ export function closestCoords(start: number[], coords: number[][]) {
   return min.coord;
 }
 
+/**
+ * Finds the degree direction between two points
+ * @param { number [] } point1, { number [] } point2
+ * @returns { number } degree between two points
+ */
 function calcDegDirection(p1: number[], p2: number[]): number {
   const angleRad = Math.atan((p2[1] - p1[1]) / (p2[0] - p1[0]));
   return ((angleRad * 180) / Math.PI);
@@ -120,6 +144,11 @@ export function fillArray(max: number, el: any) {
   return result;
 }
 
+/**
+ * Checks if a location is within map bounds
+ * @param { number [] } start, { number [] } [dx, dy], { number } mapDimensions 
+ * @returns { number [][]} coordinates of closest location
+ */
 function checkBounds(start: number[], toAdd: number[], mapDim: number) {
   const result = [true, true];
   if (start[1] + toAdd[1] >= mapDim) {
@@ -201,6 +230,11 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
   return moveQueue;
 }
 
+/**
+ * Finds the closest team castle
+ * @param { BCAbstractRobot } self
+ * @returns { number [][]} coordinates of closest castle
+ */
 export function findClosestFriendlyCastles(self: BCAbstractRobot) {
   const storageLocs: number[][] = [];
   const visibleRobots = self.getVisibleRobots();
