@@ -344,6 +344,31 @@ function findClosestFriendlyCastles(self) {
   }
   return closestCoords([self.me.x, self.me.y], storageLocs);
 }
+// Function will take in one of our castles and reflect its position to obtain
+// the location of an enemy castle
+function enemyCastle(xcor, ycor, mapLength, self, horizontal) {
+  // vertical reflection on the castle
+  const coordinateVertical = [mapLength - xcor - 1, ycor];
+  const coordinateHorizontal = [xcor, mapLength - ycor - 1];
+  if (!horizontal) {
+    return coordinateVertical;
+  } else {
+    return coordinateHorizontal;
+  }
+}
+function horizontalFlip(self) {
+  const lenght = self.map.length;
+  let x;
+  let y;
+  for (x = 0; x < lenght; ++x) {
+    for (y = 0; y < lenght; ++y) {
+      if (!(self.map[x][y] === self.map[lenght - x - 1][y])) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
 function castleBuild(self) {
   const units = [1, 2, 3, 4];
@@ -404,6 +429,7 @@ class MyRobot extends BCAbstractRobot {
   }
   turn() {
     const choice = randomValidLoc(this);
+    const enemyCastleLocation = [];
     switch (this.me.unit) {
       case SPECS.PILGRIM: {
         // this.log("Pilgrim");
@@ -434,6 +460,25 @@ class MyRobot extends BCAbstractRobot {
         return this.move(choice[0], choice[1]);
       }
       case SPECS.CASTLE: {
+        // get castle coordinates
+        if (this.me.turn === 1) {
+          const horizontal = horizontalFlip(this);
+          enemyCastleLocation.push(
+            enemyCastle(
+              this.me.x,
+              this.me.y,
+              this.map.length,
+              this,
+              horizontal,
+            ),
+          );
+          this.log(
+            'CASTE LOCATION' +
+              enemyCastleLocation[0][0] +
+              ', ' +
+              enemyCastleLocation[0][1],
+          );
+        }
         return this.handleCastle();
       }
     }

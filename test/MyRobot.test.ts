@@ -1,5 +1,5 @@
-import { closestCoords, closestMiningLocation, fillArray, simplePathFinder } from "../src/utils";
 import { PriorityQueue } from "../src/PriorityQueue";
+import { closestCoords, closestMiningLocation, fillArray, simplePathFinder } from "../src/utils";
 // let robot = new MyRobot();
 
 test("Closest Mining Location", () => {
