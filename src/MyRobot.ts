@@ -1,7 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst } from "./Attack";
 import { castleBuild, pilgrimBuild } from './BuildUnits';
-import {closestCoords, closestMiningLocation, findClosestFriendlyCastles,  randomValidLoc, simplePathFinder, simpleValidLoc } from "./utils";
+import {closestCoords, closestMiningLocation, enemyCastle, findClosestFriendlyCastles, horizontalFlip, randomValidLoc, simplePathFinder, simpleValidLoc} from "./utils";
 
 class MyRobot extends BCAbstractRobot {
   private readonly adjChoices: number[][] = [
@@ -25,6 +25,7 @@ class MyRobot extends BCAbstractRobot {
   
   public turn(): Action | Falsy {
     const choice: number[] = randomValidLoc(this);
+	const enemyCastleLocation = [];
 
     switch (this.me.unit) {
       case SPECS.PILGRIM: {
@@ -62,6 +63,13 @@ class MyRobot extends BCAbstractRobot {
       }
 
       case SPECS.CASTLE: {
+		// get castle coordinates
+		if(this.me.turn === 1)
+		{
+			const horizontal = horizontalFlip(this); 
+			enemyCastleLocation.push(enemyCastle(this.me.x, this.me.y, this.map.length, this, horizontal));
+			this.log("CASTE LOCATION" + enemyCastleLocation[0][0] + ", " + enemyCastleLocation[0][1]);
+		}
         return this.handleCastle();
       }
     }
