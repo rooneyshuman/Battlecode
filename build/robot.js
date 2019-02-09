@@ -9,6 +9,8 @@ function attackFirst(self) {
   const listLength = visibleRobots.length;
   // let x = 0; // keep track of number of robots in attackableRobots array
   let i;
+  let robotToAttack = new Array(2);
+  let priorityRobot = -1;
   for (i = 0; i < listLength; ++i) {
     const rob = visibleRobots[i];
     // Check if the robot just showed up because of radio broadcast
@@ -27,13 +29,36 @@ function attackFirst(self) {
       dist <= SPECS.UNITS[self.me.unit].ATTACK_RADIUS[1]
     ) {
       self.log('CAN ATTACK ROBOT:' + rob.id);
-      const robotToAttack = new Array(2);
-      robotToAttack[0] = rob.x - self.me.x;
-      robotToAttack[1] = rob.y - self.me.y;
-      return robotToAttack;
+      // the priority of the robot that is within attacking vision if it is higher than the current one switch over to that robot
+      let priority = 0;
+      switch (rob.unit) {
+        case SPECS.PILGRIM: {
+          priority = 0;
+        }
+        case SPECS.CRUSADER: {
+          priority = 2;
+        }
+        case SPECS.CASTLE: {
+          priority = 1;
+        }
+        case SPECS.PROPHET: {
+          priority = 4;
+        }
+        case SPECS.PREACHER: {
+          priority = 3;
+        }
+      }
+      if (priority > priorityRobot) {
+        robotToAttack[0] = rob.x - self.me.x;
+        robotToAttack[1] = rob.y - self.me.y;
+        priorityRobot = priority;
+      }
     }
+  }
+  if (priorityRobot === -1) {
     return null;
   }
+  return robotToAttack;
 }
 function rushCastle(self, dest, destQ) {
   let nextMove;
