@@ -96,7 +96,7 @@ class MyRobot extends BCAbstractRobot {
 
     if(this.destination === undefined) {
       // Calculate closest karbonite/fuel location.
-      this.log(" > > > FINDING CLOSEST MINING SPOT > > >");
+      this.log(`MY DEST IS ${this.resourceLocation}`)
       this.destination = this.resourceLocation;
       this.destinationQueue = simplePathFinder(this.map, [this.me.x, this.me.y], this.destination);
       this.nextMove = this.destinationQueue.pop();
@@ -163,10 +163,10 @@ class MyRobot extends BCAbstractRobot {
   private initializePilgrim() {
     this.log("> > > FINDING THINGS > > >")
     // 1st pilgrim mines karbonite. 2nd pilgrim mines fuel
-    this.resourceLocation = (visiblePilgrims(this) < 1) ?
+    this.resourceLocation = (visiblePilgrims(this) <= 1) ?
     closestMiningLocation([this.me.x, this.me.y], this.karbonite_map) :
     closestMiningLocation([this.me.x, this.me.y], this.fuel_map);
-    this.log(`RESRC LOC: ${this.resourceLocation}, pilnum${visiblePilgrims(this)}`);
+    this.log(`VISPILGS < 1: ${visiblePilgrims(this) < 1} RESRC LOC: ${this.resourceLocation}, pilnum${visiblePilgrims(this)}`);
   }
 }
 
