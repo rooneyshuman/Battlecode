@@ -3,3 +3,4 @@ node_modules/
 replay.bc19
 slnx.sqlite
 package-lock.json
+*.sqlite-journal

@@ -1,7 +1,11 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
-import { attackFirst } from "./Attack";
+import { attackFirst, rushCastle } from "./Attack";
 import { castleBuild, pilgrimBuild } from './BuildUnits';
+<<<<<<< HEAD
 import {closestCoords, closestMiningLocation, findClosestFriendlyCastles, manhatDist, randomValidLoc, simplePathFinder, simpleValidLoc, visiblePilgrims} from "./utils";
+=======
+import {closestCoords, closestMiningLocation, enemyCastle, findClosestFriendlyCastles, horizontalFlip, randomValidLoc, simplePathFinder, simpleValidLoc} from "./utils";
+>>>>>>> 4f49b31cc809082bf23ac348e577db8078cbbee4
 
 class MyRobot extends BCAbstractRobot {
   private readonly adjChoices: number[][] = [
@@ -23,9 +27,12 @@ class MyRobot extends BCAbstractRobot {
   private destinationQueue: number[][] = [];
   private destination: number[] = undefined;
   private nextMove: number[] = undefined;
+  private enemyCastleLocation: number[][] = [];
+  private enemyCastleLoc:number [][] = [];
   
   public turn(): Action | Falsy {
     const choice: number[] = randomValidLoc(this);
+	// const enemyCastleLocation: number[][] = [];
 
     switch (this.me.unit) {
       case SPECS.PILGRIM: {
@@ -35,6 +42,8 @@ class MyRobot extends BCAbstractRobot {
       
       case SPECS.CRUSADER: {
         // this.log(`Crusader health: ${this.me.health}`);
+		
+		// move torwards enemy castle
         const attackingCoordinates = attackFirst(this);
 
         if (attackingCoordinates) {
@@ -50,6 +59,22 @@ class MyRobot extends BCAbstractRobot {
         if (attackingCoordinates) {
           return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
         }
+
+		if(this.me.turn === 1)
+		{
+			const horizontal = horizontalFlip(this); 
+			this.enemyCastleLoc.push(enemyCastle(this.me.x, this.me.y, this.map.length, this, horizontal));
+			this.destination = this.enemyCastleLoc[0];
+			this.destinationQueue = simplePathFinder(this.map, [this.me.x, this.me.y], this.destination);
+			this.log("CASTE LOCATION PROPHET" + this.enemyCastleLoc[0][0] + ", " + this.enemyCastleLoc[0][1]);
+		}
+		
+		
+		if(this.enemyCastleLoc !== null)
+		{
+		  return rushCastle(this, this.destination, this.destinationQueue);
+		}
+
         return this.move(choice[0], choice[1]);
       }
 
@@ -63,6 +88,13 @@ class MyRobot extends BCAbstractRobot {
       }
 
       case SPECS.CASTLE: {
+		// get castle coordinates
+		if(this.me.turn === 1)
+		{
+			const horizontal = horizontalFlip(this); 
+			this.enemyCastleLoc.push(enemyCastle(this.me.x, this.me.y, this.map.length, this, horizontal));
+			this.log("CASTE LOCATION" + this.enemyCastleLoc[0][0] + ", " + this.enemyCastleLoc[0][1]);
+		}
         return this.handleCastle();
       }
     }
