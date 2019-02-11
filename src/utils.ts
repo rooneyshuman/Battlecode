@@ -250,7 +250,6 @@ export function findClosestFriendlyCastles(self: BCAbstractRobot) {
   return closestCoords([self.me.x, self.me.y], storageLocs); 
 }
 
-<<<<<<< HEAD
 /**
  * Finds the number of visible pilgrims
  * @param { BCAbstractRobot } self
@@ -263,7 +262,8 @@ export function visiblePilgrims(self: BCAbstractRobot): number {
     return robot.team === self.me.team && robot.unit === SPECS.PILGRIM;
   }
   return visibleRobots.filter(isPilgrim).length;
-=======
+}
+
 // Function will take in one of our castles and reflect its position to obtain
 // the location of an enemy castle
 export function enemyCastle(xcor: number, ycor: number, mapLength: number, self: any, horizontal: boolean)
@@ -296,5 +296,4 @@ export function horizontalFlip(self: any)
 		}
 	}
 	return true;
->>>>>>> 4f49b31cc809082bf23ac348e577db8078cbbee4
 }

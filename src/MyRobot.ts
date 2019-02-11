@@ -1,11 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst, rushCastle } from "./Attack";
 import { castleBuild, pilgrimBuild } from './BuildUnits';
-<<<<<<< HEAD
-import {closestCoords, closestMiningLocation, findClosestFriendlyCastles, manhatDist, randomValidLoc, simplePathFinder, simpleValidLoc, visiblePilgrims} from "./utils";
-=======
-import {closestCoords, closestMiningLocation, enemyCastle, findClosestFriendlyCastles, horizontalFlip, randomValidLoc, simplePathFinder, simpleValidLoc} from "./utils";
->>>>>>> 4f49b31cc809082bf23ac348e577db8078cbbee4
+import {closestCoords, closestMiningLocation, enemyCastle, findClosestFriendlyCastles, horizontalFlip, manhatDist, randomValidLoc, simplePathFinder, simpleValidLoc, visiblePilgrims} from "./utils";
 
 class MyRobot extends BCAbstractRobot {
   private readonly adjChoices: number[][] = [
