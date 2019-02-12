@@ -2,14 +2,14 @@ import { BCAbstractRobot, SPECS } from 'battlecode';
 import { PriorityQueue } from './PriorityQueue';
 
 const adjChoices: number[][] = [
-    [0, -1],
-    [-1, -1],
-    [-1, 0],
-    [-1, 1],
-    [0, 1],
-    [1, 1],
-    [1, 0],
-    [1, -1],
+  [0, -1],
+  [-1, -1],
+  [-1, 0],
+  [-1, 1],
+  [0, 1],
+  [1, 1],
+  [1, 0],
+  [1, -1],
 ];
 
 const cardinalDirections = [[0, 1], [1, 0], [0, -1], [-1, 0]];
@@ -20,18 +20,18 @@ const cardinalDirections = [[0, 1], [1, 0], [0, -1], [-1, 0]];
  * @returns { number [] } Array containing elements that consist of [x , y]
  */
 export function simpleValidLoc(self: BCAbstractRobot): number[] {
-    let i = 0;
-    let bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
-    while((bounds[0] !== true) && (bounds[1] !== true) && (i < adjChoices.length)) {
-      // While adjChoices[i] is out of bounds, iterate through i.
-      i += 1;
-      bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
-    }
-    if(i > adjChoices.length) {
-      return [0, 1];
-    }
+  let i = 0;
+  let bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
+  while ((bounds[0] !== true) && (bounds[1] !== true) && (i < adjChoices.length)) {
+    // While adjChoices[i] is out of bounds, iterate through i.
+    i += 1;
+    bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
+  }
+  if (i > adjChoices.length) {
+    return [0, 1];
+  }
 
-    return adjChoices[i];
+  return adjChoices[i];
 }
 
 /**
@@ -40,54 +40,60 @@ export function simpleValidLoc(self: BCAbstractRobot): number[] {
  * @returns { number [] } Array containing elements that consist of [x , y]
  */
 export function randomValidLoc(self: BCAbstractRobot): number[] {
-    // TODO: Possibly check if a unit is in the desired space for movement?
-    
-    const mapDim = self.map[0].length;
-    let rand = Math.floor(Math.random() * adjChoices.length);
-    let loc = adjChoices[rand];
-    let counter = 0;
-
-
-    do {
-      if (self.me.y + loc[1] >= mapDim) {
-        loc[1] = -1;
-      }
-      if (self.me.y + loc[1] < 0) {
-        loc[1] = 1;
-      }
-      if (self.me.x + loc[0] >= mapDim) {
-        loc[0] = -1;
-      }
-      if (self.me.x + loc[0] < 0) {
-        loc[0] = 1;
-      }
-      rand = (rand + 1) % adjChoices.length;
-      counter++;
-    } while (!self.map[self.me.y + loc[1]][self.me.x + loc[0]] && counter < adjChoices.length);
-    if (counter >= adjChoices.length) {
-      loc = [0, 1];
-    }
-    return loc;
-  }
-
-/**
- * Finds an in-bounds random location adjacent to our robot
- * @param { BCAbstractRobot } self
- * @returns { number [] } Array containing elements that consist of [x , y]
- */
-export function availableLoc(selfX : number, selfY : number, visionMap : number[][]): number[] {
   // TODO: Possibly check if a unit is in the desired space for movement?
-  
+
+  const mapDim = self.map[0].length;
   let rand = Math.floor(Math.random() * adjChoices.length);
   let loc = adjChoices[rand];
   let counter = 0;
 
-  while (visionMap[loc[0] + selfX][loc[1] + selfY] !== 0 || counter < 8) {
-    rand = Math.floor(Math.random() * adjChoices.length);
-    loc = adjChoices[rand];
-    ++counter;
+
+  do {
+    if (self.me.y + loc[1] >= mapDim) {
+      loc[1] = -1;
+    }
+    if (self.me.y + loc[1] < 0) {
+      loc[1] = 1;
+    }
+    if (self.me.x + loc[0] >= mapDim) {
+      loc[0] = -1;
+    }
+    if (self.me.x + loc[0] < 0) {
+      loc[0] = 1;
+    }
+    rand = (rand + 1) % adjChoices.length;
+    counter++;
+  } while (!self.map[self.me.y + loc[1]][self.me.x + loc[0]] && counter < adjChoices.length);
+  if (counter >= adjChoices.length) {
+    loc = [0, 1];
   }
   return loc;
+}
+
+/**
+ * Finds an in-bounds open location adjacent to our robot
+ * @param { number } our x-coord, { number } our y-coord, { number[][] } our visionMap
+ * @returns { number [] } Array containing elements that consist of [x , y]
+ */
+export function availableLoc(selfX: number, selfY: number, visionMap: number[][]): number[] {
+  let i: number = 0;
+  const avail : number [] = [];
+
+  do {
+    avail[0] = adjChoices[i][0];
+    avail[1] = adjChoices[i][1];
+    const xCoord = avail[0] + selfX;
+    const yCoord = avail[1] + selfY;
+    if (visionMap[xCoord][yCoord] === 0) {
+      return avail;
+    }
+    else {
+      ++i;
+    }
+  } while (i < adjChoices.length);
+
+  // No available adjacent location 
+  return [-2,-2];
 }
 
 /**
@@ -98,9 +104,9 @@ export function availableLoc(selfX : number, selfY : number, visionMap : number[
 export function closestMiningLocation(loc: number[], map: boolean[][]): number[] {
   let closestDist = Infinity;
   let closestLoc;
-  for(let y = 0; y < map.length; y++) {
-    for(let x = 0; x < map.length; x++) {
-      if(map[y][x] && (manhatDist([x, y], loc) < closestDist)) {
+  for (let y = 0; y < map.length; y++) {
+    for (let x = 0; x < map.length; x++) {
+      if (map[y][x] && (manhatDist([x, y], loc) < closestDist)) {
         closestDist = manhatDist([x, y], loc);
         closestLoc = [x, y];
       }
@@ -126,15 +132,15 @@ export function manhatDist(a: number[], b: number[]) {
  */
 export function closestCoords(start: number[], coords: number[][]) {
   const distances = [];
-  for(const coord of coords) {
+  for (const coord of coords) {
     distances.push({
       distance: manhatDist(start, coord),
       coord,
     });
   }
   let min = distances[0];
-  for(const dist of distances) {
-    if(dist.distance < min.distance) {
+  for (const dist of distances) {
+    if (dist.distance < min.distance) {
       min = dist;
     }
   }
@@ -174,10 +180,10 @@ export function fillArray(max: number, el: any) {
 function checkBounds(start: number[], toAdd: number[], mapDim: number) {
   const result = [true, true];
   if (start[1] + toAdd[1] >= mapDim) {
-    result[1] = false; 
+    result[1] = false;
   }
   if (start[1] + toAdd[1] < 0) {
-    result[1] = false; 
+    result[1] = false;
   }
   if (start[0] + toAdd[0] >= mapDim) {
     result[0] = true;
@@ -209,24 +215,24 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
   // fScore[start[1]][start[0]] = manhatDist(start, dest);
   parentCoord[start[1]][start[0]] = start;
 
-  while(queue.size() !== 0) {
+  while (queue.size() !== 0) {
     const nextHeapitem = queue.pop();
     const loc = nextHeapitem.coord
     visited[loc[1]][loc[0]] = true;
 
-    if(loc[0] === dest[0] && loc[1] === dest[1]) {
+    if (loc[0] === dest[0] && loc[1] === dest[1]) {
       pathEnd = loc;
       break;
     }
     // Add to queue only if not visited already and closest.
-      const candidates = directions.map((val) => {
-        return [val[0] + loc[0], val[1] + loc[1]];
-      });
-    for(const candidate of candidates) {
+    const candidates = directions.map((val) => {
+      return [val[0] + loc[0], val[1] + loc[1]];
+    });
+    for (const candidate of candidates) {
       // Check bounds
-      if((candidate[1] >= 0 && candidate[1] < map[0].length) && (candidate[0] >= 0 && candidate[0] < map[0].length)) {
+      if ((candidate[1] >= 0 && candidate[1] < map[0].length) && (candidate[0] >= 0 && candidate[0] < map[0].length)) {
         // Check visit and passable
-        if(visited[candidate[1]][candidate[0]] !== true && map[candidate[1]][candidate[0]] === true) {
+        if (visited[candidate[1]][candidate[0]] !== true && map[candidate[1]][candidate[0]] === true) {
           // If not visited and is passable, push to queue.
           parentCoord[candidate[1]][candidate[0]] = loc;
 
@@ -239,7 +245,7 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
       }
     }
   }
-  while(pathEnd !== undefined) {
+  while (pathEnd !== undefined) {
     moveQueue.push(pathEnd);
     pathEnd = parentCoord[pathEnd[1]][pathEnd[0]];
 
@@ -261,15 +267,15 @@ export function findClosestFriendlyCastles(self: BCAbstractRobot) {
   const storageLocs: number[][] = [];
   const visibleRobots = self.getVisibleRobots();
   const castles = visibleRobots.filter((robot) => {
-    if( (robot.team === self.me.team) && (robot.unit === SPECS.CASTLE)) {
+    if ((robot.team === self.me.team) && (robot.unit === SPECS.CASTLE)) {
       return robot;
     }
   });
 
-  for(const loc of castles) {
+  for (const loc of castles) {
     storageLocs.push([loc.x, loc.y]);
   }
-  return closestCoords([self.me.x, self.me.y], storageLocs); 
+  return closestCoords([self.me.x, self.me.y], storageLocs);
 }
 
 /**
@@ -280,7 +286,7 @@ export function findClosestFriendlyCastles(self: BCAbstractRobot) {
 export function visiblePilgrims(self: BCAbstractRobot): number {
   const visibleRobots = self.getVisibleRobots();
 
-  function isPilgrim(robot: any){
+  function isPilgrim(robot: any) {
     return robot.team === self.me.team && robot.unit === SPECS.PILGRIM;
   }
   return visibleRobots.filter(isPilgrim).length;
@@ -288,34 +294,27 @@ export function visiblePilgrims(self: BCAbstractRobot): number {
 
 // Function will take in one of our castles and reflect its position to obtain
 // the location of an enemy castle
-export function enemyCastle(xcor: number, ycor: number, mapLength: number, self: any, horizontal: boolean)
-{
-	// vertical reflection on the castle	
-	const coordinateVertical: number[]= [mapLength- xcor -1, ycor];
-	const coordinateHorizontal: number[] = [xcor, mapLength - ycor -1];
+export function enemyCastle(xcor: number, ycor: number, mapLength: number, self: any, horizontal: boolean) {
+  // vertical reflection on the castle	
+  const coordinateVertical: number[] = [mapLength - xcor - 1, ycor];
+  const coordinateHorizontal: number[] = [xcor, mapLength - ycor - 1];
 
-	const xVertical = coordinateVertical[0];
-	const yVertical = coordinateVertical[1];
-	if (!horizontal)
-	{return coordinateVertical;}
-	else
-	{return coordinateHorizontal;}
+  const xVertical = coordinateVertical[0];
+  const yVertical = coordinateVertical[1];
+  if (!horizontal) { return coordinateVertical; }
+  else { return coordinateHorizontal; }
 }
 
-export function horizontalFlip(self: any)
-{
-	const lenght: number = self.map.length;
-	let x;
-	let y;
-	for(x = 0; x < lenght; ++x)
-	{
-		for(y = 0; y < lenght; ++y)
-		{
-			if(!(self.map[x][y] === self.map[lenght - x - 1][y]))
-			{
-				return false;
-			}
-		}
-	}
-	return true;
+export function horizontalFlip(self: any) {
+  const lenght: number = self.map.length;
+  let x;
+  let y;
+  for (x = 0; x < lenght; ++x) {
+    for (y = 0; y < lenght; ++y) {
+      if (!(self.map[x][y] === self.map[lenght - x - 1][y])) {
+        return false;
+      }
+    }
+  }
+  return true;
 }

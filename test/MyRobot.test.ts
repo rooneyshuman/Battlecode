@@ -60,13 +60,41 @@ test.skip("Priority Queue", () => {
 });
 
 test("Available Location", () => {
-    const testMap : number [][] = [
-        [0,0,55,-1],
-        [0,1,40,-1],
-        [0,0, 0,-1]
+    let testMap : number [][] = [
+        [-1,-1,-1],
+        [-1,1,-1],
+        [0,40,-1],
+        [-1,-1,-1]
     ];
 
-    const loc = availableLoc(1,1,testMap);
-    expect(loc).toEqual([-1,-1] || [-1,0] || [0,1] || [-1,1] || [0,-1] || [1,-1]);
+    let loc = availableLoc(1,1,testMap);
+    expect(loc).toEqual([1,-1]);
 
+    testMap = [
+        [-1,-1,-1],
+        [-1,1,-1],
+        [55,40,0],
+        [-1,-1,-1]
+    ];
+    loc = availableLoc(1,1,testMap);
+    expect(loc).toEqual([1,1]);
+
+    testMap = [
+        [-1,-1,-1],
+        [0,1,-1],
+        [55,40,-1],
+        [-1,-1,-1]
+    ];
+    loc = availableLoc(1,1,testMap);
+    expect(testMap[1][0]).toEqual(0);
+    // expect(loc).toEqual([-1,0]);
+
+    testMap = [
+        [-1,-1,-1],
+        [-1,1,-1],
+        [55,40,-1],
+        [-1,-1,-1]
+    ];
+    loc = availableLoc(1,1,testMap);
+    expect(loc).toEqual([-2,-2]);
 })

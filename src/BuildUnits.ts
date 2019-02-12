@@ -4,8 +4,8 @@ import { availableLoc, randomValidLoc, visiblePilgrims } from "./utils";
 export function castleBuild(self: BCAbstractRobot): BuildAction | Falsy {
     const units: number[] = [1, 2, 3, 4];
     const visionMap = self.getVisibleRobotMap();
-    const buildLoc: number[] = randomValidLoc(self);
-    // availableLoc(self.me.x, self.me.y, visionMap);
+    // const buildLoc: number[] = randomValidLoc(self);
+    const buildLoc: number[] = availableLoc(self.me.x, self.me.y, visionMap);
  
     self.log(`Castle health: ${self.me.health}`);
 
