@@ -9,7 +9,7 @@ function attackFirst(self) {
   const listLength = visibleRobots.length;
   // let x = 0; // keep track of number of robots in attackableRobots array
   let i;
-  let robotToAttack = new Array(2);
+  const robotToAttack = new Array(2);
   let priorityRobot = -1;
   for (i = 0; i < listLength; ++i) {
     const rob = visibleRobots[i];
@@ -528,7 +528,11 @@ class MyRobot extends BCAbstractRobot {
               this.enemyCastleLoc[0][1],
           );
         }
-        if (this.enemyCastleLoc !== null) {
+        if (
+          this.enemyCastleLoc !== null &&
+          (this.destinationQueue !== undefined ||
+            this.destinationQueue.length !== 0)
+        ) {
           return rushCastle(this, this.destination, this.destinationQueue);
         }
         return this.move(choice[0], choice[1]);
