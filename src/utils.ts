@@ -2,17 +2,15 @@ import { BCAbstractRobot, SPECS } from 'battlecode';
 import { PriorityQueue } from './PriorityQueue';
 
 const adjChoices: number[][] = [
-  [0, -1],
-  [-1, -1],
-  [-1, 0],
-  [-1, 1],
-  [0, 1],
-  [1, 1],
-  [1, 0],
-  [1, -1],
+  [0, -1],    // S
+  [-1, -1],   // NW
+  [-1, 0],    // W
+  [-1, 1],    // SW
+  [0, 1],     // N
+  [1, 1],     // NE
+  [1, 0],     // E
+  [1, -1],    // SE
 ];
-
-const cardinalDirections = [[0, 1], [1, 0], [0, -1], [-1, 0]];
 
 /**
  * Finds an in-bounds location adjacent to our robot
@@ -76,21 +74,15 @@ export function randomValidLoc(self: BCAbstractRobot): number[] {
  * @returns { number [] } Array containing elements that consist of [x , y]
  */
 export function availableLoc(selfX: number, selfY: number, visionMap: number[][]): number[] {
-  let i: number = 0;
-  const avail : number [] = [];
+  let avail : number [] = [];
 
-  do {
-    avail[0] = adjChoices[i][0];
-    avail[1] = adjChoices[i][1];
+  for (avail of adjChoices){
     const xCoord = avail[0] + selfX;
     const yCoord = avail[1] + selfY;
-    if (visionMap[xCoord][yCoord] === 0) {
+    if (visionMap[yCoord][xCoord] === 0) {
       return avail;
-    }
-    else {
-      ++i;
-    }
-  } while (i < adjChoices.length);
+    } 
+  }
 
   // No available adjacent location 
   return [-2,-2];
@@ -263,7 +255,7 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
  * @param { BCAbstractRobot } self
  * @returns { number [][]} coordinates of closest castle
  */
-export function findClosestFriendlyCastles(self: BCAbstractRobot) {
+export function findClosestFriendlyCastles(self: BCAbstractRobot) : number []{
   const storageLocs: number[][] = [];
   const visibleRobots = self.getVisibleRobots();
   const castles = visibleRobots.filter((robot) => {
@@ -299,19 +291,17 @@ export function enemyCastle(xcor: number, ycor: number, mapLength: number, self:
   const coordinateVertical: number[] = [mapLength - xcor - 1, ycor];
   const coordinateHorizontal: number[] = [xcor, mapLength - ycor - 1];
 
-  const xVertical = coordinateVertical[0];
-  const yVertical = coordinateVertical[1];
   if (!horizontal) { return coordinateVertical; }
   else { return coordinateHorizontal; }
 }
 
 export function horizontalFlip(self: any) {
-  const lenght: number = self.map.length;
+  const length: number = self.map.length;
   let x;
   let y;
-  for (x = 0; x < lenght; ++x) {
-    for (y = 0; y < lenght; ++y) {
-      if (!(self.map[x][y] === self.map[lenght - x - 1][y])) {
+  for (x = 0; x < length; ++x) {
+    for (y = 0; y < length; ++y) {
+      if (!(self.map[x][y] === self.map[length - x - 1][y])) {
         return false;
       }
     }
