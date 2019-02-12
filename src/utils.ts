@@ -74,18 +74,18 @@ export function randomValidLoc(self: BCAbstractRobot): number[] {
  * @returns { number [] } Array containing elements that consist of [x , y]
  */
 export function availableLoc(selfX: number, selfY: number, visionMap: number[][]): number[] {
-  let avail : number [] = [];
+  let avail: number[] = [];
 
-  for (avail of adjChoices){
+  for (avail of adjChoices) {
     const xCoord = avail[0] + selfX;
     const yCoord = avail[1] + selfY;
     if (visionMap[yCoord][xCoord] === 0) {
       return avail;
-    } 
+    }
   }
 
   // No available adjacent location 
-  return [-2,-2];
+  return [-2, -2];
 }
 
 /**
@@ -255,7 +255,7 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
  * @param { BCAbstractRobot } self
  * @returns { number [][]} coordinates of closest castle
  */
-export function findClosestFriendlyCastles(self: BCAbstractRobot) : number []{
+export function findClosestFriendlyCastles(self: BCAbstractRobot): number[] {
   const storageLocs: number[][] = [];
   const visibleRobots = self.getVisibleRobots();
   const castles = visibleRobots.filter((robot) => {

@@ -1,7 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst, rushCastle } from "./Attack";
 import { castleBuild, pilgrimBuild } from './BuildUnits';
-import { availableLoc, closestMiningLocation, enemyCastle, findClosestFriendlyCastles, horizontalFlip, manhatDist, randomValidLoc, simplePathFinder, simpleValidLoc, visiblePilgrims} from "./utils";
+import { availableLoc, closestMiningLocation, enemyCastle, findClosestFriendlyCastles, horizontalFlip, simplePathFinder, visiblePilgrims} from "./utils";
 
 class MyRobot extends BCAbstractRobot {
   private resourceLocation: number[] = undefined;
@@ -12,7 +12,7 @@ class MyRobot extends BCAbstractRobot {
   private enemyCastleLoc: number[][] = [];
 
   public turn(): Action | Falsy {
-    const choice: number[] = randomValidLoc(this);
+    const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap());
 
     switch (this.me.unit) {
       case SPECS.PILGRIM: {
@@ -128,7 +128,7 @@ class MyRobot extends BCAbstractRobot {
 
         return this.give(dx, dy, this.me.karbonite, this.me.fuel);
       }
-      const validLoc = simpleValidLoc(this);
+      const validLoc = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap());
       this.destination = [closestCastle[0] + validLoc[0], closestCastle[1] + validLoc[1]];
     }
 

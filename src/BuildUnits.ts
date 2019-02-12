@@ -1,9 +1,8 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
-import { availableLoc, randomValidLoc, visiblePilgrims } from "./utils";
+import { availableLoc, visiblePilgrims } from "./utils";
 
 export function castleBuild(self: BCAbstractRobot): BuildAction | Falsy {
     const visionMap = self.getVisibleRobotMap();
-    // const buildLoc: number[] = randomValidLoc(self);
     const buildLoc: number[] = availableLoc(self.me.x, self.me.y, visionMap);
 
     self.log(`Castle health: ${self.me.health}`);
