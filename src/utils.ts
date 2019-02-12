@@ -41,10 +41,12 @@ export function simpleValidLoc(self: BCAbstractRobot): number[] {
  */
 export function randomValidLoc(self: BCAbstractRobot): number[] {
     // TODO: Possibly check if a unit is in the desired space for movement?
-    const mapDim = self.map[0].length
+    
+    const mapDim = self.map[0].length;
     let rand = Math.floor(Math.random() * adjChoices.length);
     let loc = adjChoices[rand];
     let counter = 0;
+
 
     do {
       if (self.me.y + loc[1] >= mapDim) {
@@ -67,6 +69,26 @@ export function randomValidLoc(self: BCAbstractRobot): number[] {
     }
     return loc;
   }
+
+/**
+ * Finds an in-bounds random location adjacent to our robot
+ * @param { BCAbstractRobot } self
+ * @returns { number [] } Array containing elements that consist of [x , y]
+ */
+export function availableLoc(selfX : number, selfY : number, visionMap : number[][]): number[] {
+  // TODO: Possibly check if a unit is in the desired space for movement?
+  
+  let rand = Math.floor(Math.random() * adjChoices.length);
+  let loc = adjChoices[rand];
+  let counter = 0;
+
+  while (visionMap[loc[0] + selfX][loc[1] + selfY] !== 0 || counter < 8) {
+    rand = Math.floor(Math.random() * adjChoices.length);
+    loc = adjChoices[rand];
+    ++counter;
+  }
+  return loc;
+}
 
 /**
  * Finds closest mining location for the given map

@@ -1,42 +1,27 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
-import { randomValidLoc } from "./utils";
+import { availableLoc, randomValidLoc, visiblePilgrims } from "./utils";
 
 export function castleBuild(self: BCAbstractRobot): BuildAction | Falsy {
     const units: number[] = [1, 2, 3, 4];
+    const visionMap = self.getVisibleRobotMap();
     const buildLoc: number[] = randomValidLoc(self);
-
+    // availableLoc(self.me.x, self.me.y, visionMap);
+ 
     self.log(`Castle health: ${self.me.health}`);
 
     // Repeat while castle has enough karbonite for at least one pilgrim
-    while(self.karbonite >=10) {
-        const unitToBuild = units[Math.floor(Math.random() * units.length)];
-        switch (unitToBuild) {
-            case 1: {
-                if (self.karbonite >= 10) {
-                    self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
-                    return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
-                }
-            }
-            case 2: {
-                if (self.karbonite >= 20) {
-                    self.log(`Building a crusader at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
-                    return self.buildUnit(SPECS.CRUSADER, buildLoc[0], buildLoc[1]);
-                }
-            }
-            case 3: {
-                if (self.karbonite >= 25) {
-                    self.log(`Building a prophet at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
-                    return self.buildUnit(SPECS.PROPHET, buildLoc[0], buildLoc[1]);
-                }
-            }
-            case 4: {
-                if (self.karbonite >= 30) {
-                    self.log(`Building a preacher at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
-                    return self.buildUnit(SPECS.PREACHER, buildLoc[0], buildLoc[1]);
-                }
-            }
-        }
+    if (self.karbonite >= 25) {
+        self.log(`Building a prophet at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
+        return self.buildUnit(SPECS.PROPHET, buildLoc[0], buildLoc[1]);
     }
+
+    // Pilgrims have been killed off, build new ones
+    if (visiblePilgrims(self) < 2) {
+        self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
+        return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
+    }
+
+
 }
 
 export function pilgrimBuild(self: any): BuildAction | Falsy {
