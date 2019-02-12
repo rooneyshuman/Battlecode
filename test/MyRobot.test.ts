@@ -1,12 +1,13 @@
 import { PriorityQueue } from "../src/PriorityQueue";
-import { closestCoords, closestMiningLocation, fillArray, simplePathFinder } from "../src/utils";
+import { availableLoc, closestCoords, closestMiningLocation, fillArray, simplePathFinder } from "../src/utils";
+
 // let robot = new MyRobot();
 
 test("Closest Mining Location", () => {
     const testMap = [[true, true, false], [false, false, false], [false, false, true]]
     const location = closestMiningLocation([2,1], testMap)
     expect(location).toEqual([2, 2]);
-})
+});
 
 test("Closest Coords", () => {
     const start = [0, 0];
@@ -22,7 +23,7 @@ test("Pathfinding", () => {
     const path = simplePathFinder(testMap, start, end);
     // console.log(testMap);
     // console.log(path);
-})
+});
 
 test.skip("Priority Queue", () => {
     const queue = new PriorityQueue();
@@ -55,5 +56,17 @@ test.skip("Priority Queue", () => {
         queue.insert(el);
     }
     queue.pop();
-    queue.insert(testItems[4]);
+    queue.insert(testItems[4])
 });
+
+test("Available Location", () => {
+    const testMap : number [][] = [
+        [0,0,55,-1],
+        [0,1,40,-1],
+        [0,0, 0,-1]
+    ];
+
+    const loc = availableLoc(1,1,testMap);
+    expect(loc).toEqual([-1,-1] || [-1,0] || [0,1] || [-1,1] || [0,-1] || [1,-1]);
+
+})
