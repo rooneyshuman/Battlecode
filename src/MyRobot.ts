@@ -65,7 +65,7 @@ class MyRobot extends BCAbstractRobot {
 		}
 		
 		
-		if(this.enemyCastleLoc !== null)
+		if(this.enemyCastleLoc !== null && (this.destinationQueue !== undefined || this.destinationQueue.length !== 0))
 		{
 		  return rushCastle(this, this.destination, this.destinationQueue);
 		}
