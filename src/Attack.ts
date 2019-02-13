@@ -62,7 +62,7 @@ export function attackFirst(self: any) {
  */
 export function rushCastle(self: any, dest: number[], destQ: number[][]) {
 	let nextMove: number[];
-	self.log("DSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+	const toMove = new Array(2);
 	nextMove = destQ.pop();
 	self.log("LOOOK HERE" + nextMove[0] + ", " + nextMove[1]);
 	self.log("DDSADASD " + self.me.x + ", " + self.me.y);
@@ -73,17 +73,49 @@ export function rushCastle(self: any, dest: number[], destQ: number[][]) {
 		nextMove = destQ.pop();
 		const moveX = nextMove[0] - self.me.x;
 		const moveY = nextMove[1] - self.me.y;
+
+		const visibleRobots = self.getVisibleRobots();
+		const listLength = visibleRobots.length;
+		let i;
+		for(i = 0; i < listLength; ++i)
+		{
+			const rob = visibleRobots[i];
+			if(rob.x === nextMove[0] && rob.y === nextMove[1])
+			{
+				return null;
+			}
+		}
+
 		self.log(`* * * * * MOVING ${moveX}, ${moveY} > > >`)
-		return self.move(moveX, moveY);
+		toMove[0] = moveX;
+		toMove[1] = moveY;
+		return toMove;
+		// return self.move(moveX, moveY);
 	}
 	else {
 		const moveX = nextMove[0] - self.me.x;
 		const moveY = nextMove[1] - self.me.y;
+
+		const visibleRobots = self.getVisibleRobots();
+		const listLength = visibleRobots.length;
+		let i;
+		for(i = 0; i < listLength; ++i)
+		{
+			const rob = visibleRobots[i];
+			if(rob.x === nextMove[0] && rob.y === nextMove[1])
+			{
+				return null;
+			}
+		}
+
 		self.log(`**** ME ${self.me.x}, ${self.me.y} > > >`)
 		self.log(`***** nextMove ${nextMove} > > >`)
 		self.log(`*(**** MOVING ${moveX}, ${moveY} > > >`)
-		self.log(`****DEST ${dest} > > >`)
-		return self.move(moveX, moveY);
+		self.log(`****DEST ${dest} > > >`)	
+		toMove[0] = moveX;
+		toMove[1] = moveY;
+		return toMove;
+		// return self.move(moveX, moveY);
 	}
 
 }
