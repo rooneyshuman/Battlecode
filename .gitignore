@@ -1,5 +1,6 @@
 node_modules/
 .rpt2_cache/
+build/
 replay.bc19
 slnx.sqlite
 package-lock.json
