@@ -4,7 +4,7 @@ export function attackFirst(self: any) {
 	// Get all visible robots within the robots vision radius
 	const visibleRobots = self.getVisibleRobots();
 
-	// Loop through the list of visible robots and remove the friendly robots and the ones not within attacking range\
+	// Loop through the list of visible robots and remove the friendly robots and the ones not within attacking range
 	const listLength = visibleRobots.length;
 	// let x = 0; // keep track of number of robots in attackableRobots array
 	let i;
@@ -27,17 +27,17 @@ export function attackFirst(self: any) {
 				case SPECS.PILGRIM: {
 					priority = 0;
 				}
-				case SPECS.CRUSADER: {
-					priority = 2;
-				}
 				case SPECS.CASTLE: {
 					priority = 1;
 				}
-				case SPECS.PROPHET: {
-					priority = 4;
+				case SPECS.CRUSADER: {
+					priority = 2;
 				}
 				case SPECS.PREACHER: {
 					priority = 3;
+				}
+				case SPECS.PROPHET: {
+					priority = 4;
 				}
 			}
 
@@ -77,11 +77,9 @@ export function rushCastle(self: any, dest: number[], destQ: number[][]) {
 		const visibleRobots = self.getVisibleRobots();
 		const listLength = visibleRobots.length;
 		let i;
-		for(i = 0; i < listLength; ++i)
-		{
+		for (i = 0; i < listLength; ++i) {
 			const rob = visibleRobots[i];
-			if(rob.x === nextMove[0] && rob.y === nextMove[1])
-			{
+			if (rob.x === nextMove[0] && rob.y === nextMove[1]) {
 				return null;
 			}
 		}
@@ -99,19 +97,17 @@ export function rushCastle(self: any, dest: number[], destQ: number[][]) {
 		const visibleRobots = self.getVisibleRobots();
 		const listLength = visibleRobots.length;
 		let i;
-		for(i = 0; i < listLength; ++i)
-		{
+		for (i = 0; i < listLength; ++i) {
 			const rob = visibleRobots[i];
-			if(rob.x === nextMove[0] && rob.y === nextMove[1])
-			{
+			if (rob.x === nextMove[0] && rob.y === nextMove[1]) {
 				return null;
 			}
 		}
 
-		self.log(`**** ME ${self.me.x}, ${self.me.y} > > >`)
+		self.log(`**** ME (${self.me.x}, ${self.me.y}) > > >`)
 		self.log(`***** nextMove ${nextMove} > > >`)
-		self.log(`*(**** MOVING ${moveX}, ${moveY} > > >`)
-		self.log(`****DEST ${dest} > > >`)	
+		self.log(`*(**** MOVING (${moveX}, ${moveY}) > > >`)
+		self.log(`****DEST ${dest} > > >`)
 		toMove[0] = moveX;
 		toMove[1] = moveY;
 		return toMove;
