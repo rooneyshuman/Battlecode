@@ -56,14 +56,21 @@ test("Priority Queue", () => {
 });
 
 test("Available Location", () => {
+    const myMap: boolean[][] = [
+        [false, true, true],
+        [false, true, true],
+        [true, true, true],
+        [false, true, false],
+    ];
+
     let testMap: number[][] = [
         [-1, -1, -1],
-        [-1, 1, -1],
+        [0, 1, -1],
         [0, 40, -1],
         [-1, -1, -1]
     ];
 
-    let loc = availableLoc(1, 1, testMap);
+    let loc = availableLoc(1, 1, testMap, myMap);
     expect(loc).toEqual([-1, 1]);
 
     testMap = [
@@ -72,7 +79,7 @@ test("Available Location", () => {
         [55, 40, 0],
         [-1, -1, -1]
     ];
-    loc = availableLoc(1, 1, testMap);
+    loc = availableLoc(1, 1, testMap, myMap);
     expect(loc).toEqual([1, 1]);
 
     testMap = [
@@ -81,7 +88,7 @@ test("Available Location", () => {
         [55, 1, -1],
         [-1, -1, -1]
     ];
-    loc = availableLoc(2, 1, testMap);
+    loc = availableLoc(2, 1, testMap, myMap);
     // expect(loc).toEqual([0, -1]);       Not sure why this doesnt't pass
 
     testMap = [
@@ -90,8 +97,8 @@ test("Available Location", () => {
         [55, 40, -1],
         [-1, -1, -1]
     ];
-    loc = availableLoc(1, 1, testMap);
-    expect(loc).toEqual([-2, -2]);
+    loc = availableLoc(1, 1, testMap, myMap);
+    expect(loc).toEqual(null);
 
     testMap = [
         [0, -1, -1],
@@ -99,15 +106,15 @@ test("Available Location", () => {
         [55, 40, -1],
         [-1, -1, -1]
     ];
-    loc = availableLoc(1, 1, testMap);
-    expect(loc).toEqual([-1, -1]);
+    loc = availableLoc(1, 1, testMap, myMap);
+    expect(loc).toEqual(null);
 
     testMap = [
-        [-1, -1, -1],
-        [0, 1, -1],
+        [-1, -1, 0],
+        [-1, 1, -1],
         [55, 40, -1],
         [-1, -1, -1]
     ];
-    loc = availableLoc(1, 1, testMap);
-    expect(loc).toEqual([-1, 0]);
+    loc = availableLoc(1, 1, testMap, myMap);
+    expect(loc).toEqual([1, -1]);
 })
