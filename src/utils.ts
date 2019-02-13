@@ -112,7 +112,7 @@ export function closestMiningLocation(loc: number[], map: boolean[][]): number[]
  * @param { number [] } locationA, { number [] } locationB 
  * @returns { number } Manhattan distance between A and B
  */
-export function manhatDist(a: number[], b: number[]) {
+export function manhatDist(a: number[], b: number[]) : number{
   // Manhattan distance on a square grid.
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
 }
@@ -120,9 +120,9 @@ export function manhatDist(a: number[], b: number[]) {
 /**
  * Finds closest coordinates in an array of locations to a starting point
  * @param { number [] } start, { number [][] } locations
- * @returns { number [][]} coordinates of closest location
+ * @returns { number []} coordinates of closest location
  */
-export function closestCoords(start: number[], coords: number[][]) {
+export function closestCoords(start: number[], coords: number[][]) : number[]{
   const distances = [];
   for (const coord of coords) {
     distances.push({
@@ -144,7 +144,7 @@ export function closestCoords(start: number[], coords: number[][]) {
  * @param { number [] } point1, { number [] } point2
  * @returns { number } degree between two points
  */
-function calcDegDirection(p1: number[], p2: number[]): number {
+export function calcDegDirection(p1: number[], p2: number[]): number {
   const angleRad = Math.atan((p2[1] - p1[1]) / (p2[0] - p1[0]));
   return ((angleRad * 180) / Math.PI);
 }
@@ -167,9 +167,9 @@ export function fillArray(max: number, el: any) {
 /**
  * Checks if a location is within map bounds
  * @param { number [] } start, { number [] } [dx, dy], { number } mapDimensions 
- * @returns { number [][]} coordinates of closest location
+ * @returns { boolean[]} true/false if location is/not within bounds
  */
-function checkBounds(start: number[], toAdd: number[], mapDim: number) {
+function checkBounds(start: number[], toAdd: number[], mapDim: number) : boolean[] {
   const result = [true, true];
   if (start[1] + toAdd[1] >= mapDim) {
     result[1] = false;
