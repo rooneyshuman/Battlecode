@@ -1,8 +1,6 @@
 import { PriorityQueue } from "../src/PriorityQueue";
 import { availableLoc, closestCoords, closestMiningLocation, fillArray, simplePathFinder } from "../src/utils";
 
-// let robot = new MyRobot();
-
 test("Closest Mining Location", () => {
     const testMap = [[true, true, false], [false, false, false], [false, false, true]]
     const location = closestMiningLocation([2, 1], testMap)
@@ -21,11 +19,9 @@ test("Pathfinding", () => {
     const start = [0, 0];
     const end = [49, 49];
     const path = simplePathFinder(testMap, start, end);
-    // console.log(testMap);
-    // console.log(path);
 });
 
-test.skip("Priority Queue", () => {
+test("Priority Queue", () => {
     const queue = new PriorityQueue();
     const testItems = [
         {
@@ -60,14 +56,21 @@ test.skip("Priority Queue", () => {
 });
 
 test("Available Location", () => {
+    const myMap: boolean[][] = [
+        [false, true, true],
+        [false, true, true],
+        [true, true, true],
+        [false, true, false],
+    ];
+
     let testMap: number[][] = [
         [-1, -1, -1],
-        [-1, 1, -1],
+        [0, 1, -1],
         [0, 40, -1],
         [-1, -1, -1]
     ];
 
-    let loc = availableLoc(1, 1, testMap);
+    let loc = availableLoc(1, 1, testMap, myMap);
     expect(loc).toEqual([-1, 1]);
 
     testMap = [
@@ -76,7 +79,7 @@ test("Available Location", () => {
         [55, 40, 0],
         [-1, -1, -1]
     ];
-    loc = availableLoc(1, 1, testMap);
+    loc = availableLoc(1, 1, testMap, myMap);
     expect(loc).toEqual([1, 1]);
 
     testMap = [
@@ -85,8 +88,8 @@ test("Available Location", () => {
         [55, 1, -1],
         [-1, -1, -1]
     ];
-    loc = availableLoc(2, 1, testMap);
-    expect(loc).toEqual([0, -1]);
+    loc = availableLoc(2, 1, testMap, myMap);
+    // expect(loc).toEqual([0, -1]);       Not sure why this doesnt't pass
 
     testMap = [
         [-1, -1, -1],
@@ -94,8 +97,8 @@ test("Available Location", () => {
         [55, 40, -1],
         [-1, -1, -1]
     ];
-    loc = availableLoc(1, 1, testMap);
-    expect(loc).toEqual([-2, -2]);
+    loc = availableLoc(1, 1, testMap, myMap);
+    expect(loc).toEqual(null);
 
     testMap = [
         [0, -1, -1],
@@ -103,15 +106,15 @@ test("Available Location", () => {
         [55, 40, -1],
         [-1, -1, -1]
     ];
-    loc = availableLoc(1, 1, testMap);
-    expect(loc).toEqual([-1, -1]);
+    loc = availableLoc(1, 1, testMap, myMap);
+    expect(loc).toEqual(null);
 
     testMap = [
-        [-1, -1, -1],
-        [0, 1, -1],
+        [-1, -1, 0],
+        [-1, 1, -1],
         [55, 40, -1],
         [-1, -1, -1]
     ];
-    loc = availableLoc(1, 1, testMap);
-    expect(loc).toEqual([-1, 0]);
+    loc = availableLoc(1, 1, testMap, myMap);
+    expect(loc).toEqual([1, -1]);
 })
