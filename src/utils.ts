@@ -20,7 +20,7 @@ const adjChoices: number[][] = [
 export function simpleValidLoc(self: BCAbstractRobot): number[] {
   let i = 0;
   let bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
-  while ((bounds[0] !== true) && (bounds[1] !== true) && (i < adjChoices.length)) {
+  while ((bounds === false) && (i < adjChoices.length)) {
     // While adjChoices[i] is out of bounds, iterate through i.
     i += 1;
     bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
@@ -70,22 +70,27 @@ export function randomValidLoc(self: BCAbstractRobot): number[] {
 
 /**
  * Finds an in-bounds open location adjacent to our robot
- * @param { number } our x-coord, { number } our y-coord, { number[][] } our visionMap
+ * @param { number } our x-coord, { number } our y-coord, { number[][] } our visionMap, { boolean [][] } this.map
  * @returns { number [] } Array containing elements that consist of [x , y]
  */
-export function availableLoc(selfX: number, selfY: number, visionMap: number[][]): number[] {
+export function availableLoc(selfX: number, selfY: number, visionMap: number[][], passableMap: boolean [][]): number[] {
   let avail: number[] = [];
 
   for (avail of adjChoices) {
     const xCoord = avail[0] + selfX;
     const yCoord = avail[1] + selfY;
-    if (visionMap[yCoord][xCoord] === 0) {
+    const inBounds = checkBounds([selfX, selfY], avail, visionMap[0].length);
+    let passable;
+    if (inBounds){
+      passable = passableMap[yCoord][xCoord];
+    }
+    if (visionMap[yCoord][xCoord] === 0 && inBounds && passable) {
       return avail;
     }
   }
 
   // No available adjacent location 
-  return [-2, -2];
+  return null;
 }
 
 /**
@@ -112,7 +117,7 @@ export function closestMiningLocation(loc: number[], map: boolean[][]): number[]
  * @param { number [] } locationA, { number [] } locationB 
  * @returns { number } Manhattan distance between A and B
  */
-export function manhatDist(a: number[], b: number[]) : number{
+export function manhatDist(a: number[], b: number[]): number {
   // Manhattan distance on a square grid.
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
 }
@@ -122,7 +127,7 @@ export function manhatDist(a: number[], b: number[]) : number{
  * @param { number [] } start, { number [][] } locations
  * @returns { number []} coordinates of closest location
  */
-export function closestCoords(start: number[], coords: number[][]) : number[]{
+export function closestCoords(start: number[], coords: number[][]): number[] {
   const distances = [];
   for (const coord of coords) {
     distances.push({
@@ -169,21 +174,21 @@ export function fillArray(max: number, el: any) {
  * @param { number [] } start, { number [] } [dx, dy], { number } mapDimensions 
  * @returns { boolean[]} true/false if location is/not within bounds
  */
-function checkBounds(start: number[], toAdd: number[], mapDim: number) : boolean[] {
-  const result = [true, true];
-  if (start[1] + toAdd[1] >= mapDim) {
-    result[1] = false;
+function checkBounds(start: number[], toAdd: number[], mapDim: number): boolean {
+  const xCoord = start[0] + toAdd[0];
+  const yCoord = start[1] + toAdd[1];
+
+  // Check for new x-coordinate
+  if (xCoord >= mapDim || xCoord < 0) {
+    return false;
   }
-  if (start[1] + toAdd[1] < 0) {
-    result[1] = false;
+
+  // Check for new y-coordinate
+  if (yCoord >= mapDim || yCoord < 0) {
+    return false;
   }
-  if (start[0] + toAdd[0] >= mapDim) {
-    result[0] = true;
-  }
-  if (start[0] + toAdd[0] < 0) {
-    result[0] = true;
-  }
-  return result;
+
+  return true;
 }
 
 export function simplePathFinder(map: boolean[][], start: number[], dest: number[]): number[][] {
@@ -307,4 +312,18 @@ export function horizontalFlip(self: any) {
     }
   }
   return true;
+}
+
+/**
+ * Checks if there are any enemy robots in vision radius
+ * @param visibleRobots 
+ * @param team 
+ */
+export function visibleEnemy(visibleRobots: any[], team: number): boolean {
+  for (const bot of visibleRobots) {
+    if (bot.team !== team) {
+      return true;
+    }
+  }
+  return false;
 }
