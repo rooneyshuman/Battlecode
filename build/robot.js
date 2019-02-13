@@ -1,7 +1,5 @@
 import { SPECS, BCAbstractRobot } from 'battlecode';
 
-// const Attack = {};
-// Attack.attackFirst = (self) =>
 function attackFirst(self) {
   // Get all visible robots within the robots vision radius
   const visibleRobots = self.getVisibleRobots();
@@ -60,9 +58,15 @@ function attackFirst(self) {
   }
   return robotToAttack;
 }
+/**
+ * Rushes robot castle
+ * @param self
+ * @param dest
+ * @param destQ
+ */
 function rushCastle(self, dest, destQ) {
   let nextMove;
-  self.log('DSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+  const toMove = new Array(2);
   nextMove = destQ.pop();
   self.log('LOOOK HERE' + nextMove[0] + ', ' + nextMove[1]);
   self.log('DDSADASD ' + self.me.x + ', ' + self.me.y);
@@ -75,16 +79,40 @@ function rushCastle(self, dest, destQ) {
     nextMove = destQ.pop();
     const moveX = nextMove[0] - self.me.x;
     const moveY = nextMove[1] - self.me.y;
+    const visibleRobots = self.getVisibleRobots();
+    const listLength = visibleRobots.length;
+    let i;
+    for (i = 0; i < listLength; ++i) {
+      const rob = visibleRobots[i];
+      if (rob.x === nextMove[0] && rob.y === nextMove[1]) {
+        return null;
+      }
+    }
     self.log(`* * * * * MOVING ${moveX}, ${moveY} > > >`);
-    return self.move(moveX, moveY);
+    toMove[0] = moveX;
+    toMove[1] = moveY;
+    return toMove;
+    //return self.move(moveX, moveY);
   } else {
     const moveX = nextMove[0] - self.me.x;
     const moveY = nextMove[1] - self.me.y;
+    const visibleRobots = self.getVisibleRobots();
+    const listLength = visibleRobots.length;
+    let i;
+    for (i = 0; i < listLength; ++i) {
+      const rob = visibleRobots[i];
+      if (rob.x === nextMove[0] && rob.y === nextMove[1]) {
+        return null;
+      }
+    }
     self.log(`**** ME ${self.me.x}, ${self.me.y} > > >`);
     self.log(`***** nextMove ${nextMove} > > >`);
     self.log(`*(**** MOVING ${moveX}, ${moveY} > > >`);
     self.log(`****DEST ${dest} > > >`);
-    return self.move(moveX, moveY);
+    toMove[0] = moveX;
+    toMove[1] = moveY;
+    return toMove;
+    //return self.move(moveX, moveY);
   }
 }
 
@@ -174,65 +202,21 @@ const adjChoices = [
   [1, -1],
 ];
 /**
- * Finds an in-bounds location adjacent to our robot
- * @param { BCAbstractRobot } self
+ * Finds an in-bounds open location adjacent to our robot
+ * @param { number } our x-coord, { number } our y-coord, { number[][] } our visionMap
  * @returns { number [] } Array containing elements that consist of [x , y]
  */
-function simpleValidLoc(self) {
-  let i = 0;
-  let bounds = checkBounds(
-    [self.me.x, self.me.y],
-    adjChoices[i],
-    self.map[0].length,
-  );
-  while (bounds[0] !== true && bounds[1] !== true && i < adjChoices.length) {
-    // While adjChoices[i] is out of bounds, iterate through i.
-    i += 1;
-    bounds = checkBounds(
-      [self.me.x, self.me.y],
-      adjChoices[i],
-      self.map[0].length,
-    );
+function availableLoc(selfX, selfY, visionMap) {
+  let avail = [];
+  for (avail of adjChoices) {
+    const xCoord = avail[0] + selfX;
+    const yCoord = avail[1] + selfY;
+    if (visionMap[yCoord][xCoord] === 0) {
+      return avail;
+    }
   }
-  if (i > adjChoices.length) {
-    return [0, 1];
-  }
-  return adjChoices[i];
-}
-/**
- * Finds an in-bounds random location adjacent to our robot
- * @param { BCAbstractRobot } self
- * @returns { number [] } Array containing elements that consist of [x , y]
- */
-function randomValidLoc(self) {
-  // TODO: Possibly check if a unit is in the desired space for movement?
-  const mapDim = self.map[0].length;
-  let rand = Math.floor(Math.random() * adjChoices.length);
-  let loc = adjChoices[rand];
-  let counter = 0;
-  do {
-    if (self.me.y + loc[1] >= mapDim) {
-      loc[1] = -1;
-    }
-    if (self.me.y + loc[1] < 0) {
-      loc[1] = 1;
-    }
-    if (self.me.x + loc[0] >= mapDim) {
-      loc[0] = -1;
-    }
-    if (self.me.x + loc[0] < 0) {
-      loc[0] = 1;
-    }
-    rand = (rand + 1) % adjChoices.length;
-    counter++;
-  } while (
-    !self.map[self.me.y + loc[1]][self.me.x + loc[0]] &&
-    counter < adjChoices.length
-  );
-  if (counter >= adjChoices.length) {
-    loc = [0, 1];
-  }
-  return loc;
+  // No available adjacent location
+  return [-2, -2];
 }
 /**
  * Finds closest mining location for the given map
@@ -290,27 +274,6 @@ function fillArray(max, el) {
   }
   for (let i = 0; i < max; ++i) {
     result[i] = temp.slice(0);
-  }
-  return result;
-}
-/**
- * Checks if a location is within map bounds
- * @param { number [] } start, { number [] } [dx, dy], { number } mapDimensions
- * @returns { number [][]} coordinates of closest location
- */
-function checkBounds(start, toAdd, mapDim) {
-  const result = [true, true];
-  if (start[1] + toAdd[1] >= mapDim) {
-    result[1] = false;
-  }
-  if (start[1] + toAdd[1] < 0) {
-    result[1] = false;
-  }
-  if (start[0] + toAdd[0] >= mapDim) {
-    result[0] = true;
-  }
-  if (start[0] + toAdd[0] < 0) {
-    result[0] = true;
   }
   return result;
 }
@@ -396,6 +359,18 @@ function findClosestFriendlyCastles(self) {
   }
   return closestCoords([self.me.x, self.me.y], storageLocs);
 }
+/**
+ * Finds the number of visible pilgrims
+ * @param { BCAbstractRobot } self
+ * @returns { number } number of pilgrims in vision radius, -1 if none
+ */
+function visiblePilgrims(self) {
+  const visibleRobots = self.getVisibleRobots();
+  function isPilgrim(robot) {
+    return robot.team === self.me.team && robot.unit === SPECS.PILGRIM;
+  }
+  return visibleRobots.filter(isPilgrim).length;
+}
 // Function will take in one of our castles and reflect its position to obtain
 // the location of an enemy castle
 function enemyCastle(xcor, ycor, mapLength, self, horizontal) {
@@ -409,12 +384,12 @@ function enemyCastle(xcor, ycor, mapLength, self, horizontal) {
   }
 }
 function horizontalFlip(self) {
-  const lenght = self.map.length;
+  const length = self.map.length;
   let x;
   let y;
-  for (x = 0; x < lenght; ++x) {
-    for (y = 0; y < lenght; ++y) {
-      if (!(self.map[x][y] === self.map[lenght - x - 1][y])) {
+  for (x = 0; x < length; ++x) {
+    for (y = 0; y < length; ++y) {
+      if (!(self.map[x][y] === self.map[length - x - 1][y])) {
         return false;
       }
     }
@@ -423,67 +398,47 @@ function horizontalFlip(self) {
 }
 
 function castleBuild(self) {
-  const units = [1, 2, 3, 4];
-  const buildLoc = randomValidLoc(self);
+  const visionMap = self.getVisibleRobotMap();
+  const buildLoc = availableLoc(self.me.x, self.me.y, visionMap);
   self.log(`Castle health: ${self.me.health}`);
+  // Pilgrims have been killed off, build new ones
+  if (visiblePilgrims(self) < 2) {
+    self.log(
+      `Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${
+        self.me.turn
+      })`,
+    );
+    return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
+  }
   // Repeat while castle has enough karbonite for at least one pilgrim
-  while (self.karbonite >= 10) {
-    const unitToBuild = units[Math.floor(Math.random() * units.length)];
-    switch (unitToBuild) {
-      case 1: {
-        if (self.karbonite >= 10) {
-          self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]})`);
-          return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
-        }
-      }
-      case 2: {
-        if (self.karbonite >= 20) {
-          self.log(`Building a crusader at (${buildLoc[0]}, ${buildLoc[1]})`);
-          return self.buildUnit(SPECS.CRUSADER, buildLoc[0], buildLoc[1]);
-        }
-      }
-      case 3: {
-        if (self.karbonite >= 25) {
-          self.log(`Building a prophet at (${buildLoc[0]}, ${buildLoc[1]})`);
-          return self.buildUnit(SPECS.PROPHET, buildLoc[0], buildLoc[1]);
-        }
-      }
-      case 4: {
-        if (self.karbonite >= 30) {
-          self.log(`Building a preacher at (${buildLoc[0]}, ${buildLoc[1]})`);
-          return self.buildUnit(SPECS.PREACHER, buildLoc[0], buildLoc[1]);
-        }
-      }
-    }
+  if (self.karbonite >= 25) {
+    self.log(
+      `Building a prophet at (${buildLoc[0]}, ${buildLoc[1]}) turn (${
+        self.me.turn
+      })`,
+    );
+    return self.buildUnit(SPECS.PROPHET, buildLoc[0], buildLoc[1]);
   }
 }
 
 class MyRobot extends BCAbstractRobot {
   constructor() {
     super(...arguments);
-    this.adjChoices = [
-      [0, -1],
-      [1, -1],
-      [1, 0],
-      [1, 1],
-      [0, 1],
-      [-1, 1],
-      [-1, 0],
-      [-1, -1],
-    ];
-    this.storageLoc = [];
-    this.karboniteLocation = undefined;
-    this.fuelLocation = undefined;
+    this.resourceLocation = undefined;
     this.goMining = false;
     this.destinationQueue = [];
     this.destination = undefined;
     this.nextMove = undefined;
-    this.enemyCastleLocation = [];
     this.enemyCastleLoc = [];
+    this.enemyCastleNum = 0;
+    this.runPathAgain = 0;
   }
   turn() {
-    const choice = randomValidLoc(this);
-    // const enemyCastleLocation: number[][] = [];
+    const choice = availableLoc(
+      this.me.x,
+      this.me.y,
+      this.getVisibleRobotMap(),
+    );
     switch (this.me.unit) {
       case SPECS.PILGRIM: {
         // this.log("Pilgrim");
@@ -499,41 +454,68 @@ class MyRobot extends BCAbstractRobot {
         return this.move(choice[0], choice[1]);
       }
       case SPECS.PROPHET: {
-        // this.log(`Prophet health: ${this.me.health}`);
-        const attackingCoordinates = attackFirst(this);
-        if (attackingCoordinates) {
-          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
-        }
         if (this.me.turn === 1) {
           const horizontal = horizontalFlip(this);
-          this.enemyCastleLoc.push(
-            enemyCastle(
-              this.me.x,
-              this.me.y,
-              this.map.length,
-              this,
-              horizontal,
-            ),
-          );
-          this.destination = this.enemyCastleLoc[0];
+          const visibleRobots = this.getVisibleRobots();
+          const listLenght = visibleRobots.length;
+          let i;
+          for (i = 0; i < listLenght; ++i) {
+            const rob = visibleRobots[i];
+            if (rob.unit === SPECS.CASTLE) {
+              this.enemyCastleLoc.push(
+                enemyCastle(rob.x, rob.y, this.map.length, this, horizontal),
+              );
+              this.destination = this.enemyCastleLoc[this.enemyCastleNum];
+              this.destinationQueue = simplePathFinder(
+                this.map,
+                [this.me.x, this.me.y],
+                this.destination,
+              );
+              this.log(
+                'CASTLE LOCATION - PROPHET' +
+                  this.enemyCastleLoc[this.enemyCastleNum][0] +
+                  ', ' +
+                  this.enemyCastleLoc[this.enemyCastleNum][1],
+              );
+            }
+          }
+        }
+        if (this.runPathAgain > 0) {
           this.destinationQueue = simplePathFinder(
             this.map,
             [this.me.x, this.me.y],
             this.destination,
           );
-          this.log(
-            'CASTE LOCATION PROPHET' +
-              this.enemyCastleLoc[0][0] +
-              ', ' +
-              this.enemyCastleLoc[0][1],
-          );
+          this.runPathAgain--;
+          return this.move(choice[0], choice[1]);
+        }
+        // this.log(`Prophet health: ${this.me.health}`);
+        const attackingCoordinates = attackFirst(this);
+        if (attackingCoordinates) {
+          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
         }
         if (
           this.enemyCastleLoc !== null &&
-          (this.destinationQueue !== undefined ||
+          (this.destinationQueue !== undefined &&
             this.destinationQueue.length !== 0)
         ) {
-          return rushCastle(this, this.destination, this.destinationQueue);
+          const toMove = rushCastle(
+            this,
+            this.destination,
+            this.destinationQueue,
+          );
+          if (toMove === null) {
+            this.runPathAgain = 1;
+          } else {
+            return this.move(toMove[0], toMove[1]);
+          }
+        }
+        if (this.destinationQueue.length === 0) {
+          this.destinationQueue = simplePathFinder(
+            this.map,
+            [this.me.x, this.me.y],
+            this.destination,
+          );
         }
         return this.move(choice[0], choice[1]);
       }
@@ -559,10 +541,10 @@ class MyRobot extends BCAbstractRobot {
             ),
           );
           this.log(
-            'CASTE LOCATION' +
-              this.enemyCastleLoc[0][0] +
+            'CASTLE LOCATION' +
+              this.enemyCastleLoc[this.enemyCastleNum][0] +
               ', ' +
-              this.enemyCastleLoc[0][1],
+              this.enemyCastleLoc[this.enemyCastleNum][1],
           );
         }
         return this.handleCastle();
@@ -570,6 +552,21 @@ class MyRobot extends BCAbstractRobot {
     }
   }
   handleCastle() {
+    // Castle build pilgrims at first 2 turns
+    if (this.me.turn < 3) {
+      const buildLoc = availableLoc(
+        this.me.x,
+        this.me.y,
+        this.getVisibleRobotMap(),
+      );
+      // Have each castle build pilgrims in first 2 turns
+      this.log(
+        `Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${
+          this.me.turn
+        })`,
+      );
+      return this.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
+    }
     // If castle can't build, it tries to attack
     if (this.karbonite >= 10) {
       return castleBuild(this);
@@ -587,8 +584,8 @@ class MyRobot extends BCAbstractRobot {
     }
     if (this.destination === undefined) {
       // Calculate closest karbonite/fuel location.
-      this.log(' > > > FINDING CLOSEST MINING SPOT > > >');
-      this.destination = this.karboniteLocation;
+      this.log(`MY DEST IS ${this.resourceLocation}`);
+      this.destination = this.resourceLocation;
       this.destinationQueue = simplePathFinder(
         this.map,
         [this.me.x, this.me.y],
@@ -604,7 +601,19 @@ class MyRobot extends BCAbstractRobot {
       this.log('---FULL INVENTORY, RETURNING TO BASE---');
       this.goMining = false;
       const closestCastle = findClosestFriendlyCastles(this);
-      const validLoc = simpleValidLoc(this);
+      const dx = closestCastle[0] - this.me.x;
+      const dy = closestCastle[1] - this.me.y;
+      const dist = Math.pow(dx, 2) + Math.pow(dy, 2);
+      // If castle is in adjacent square, give resources
+      if (dist <= 2) {
+        this.log(`GIVING RESOURCES TO CASTLE [${dx},${dy}] AWAY`);
+        return this.give(dx, dy, this.me.karbonite, this.me.fuel);
+      }
+      const validLoc = availableLoc(
+        this.me.x,
+        this.me.y,
+        this.getVisibleRobotMap(),
+      );
       this.destination = [
         closestCastle[0] + validLoc[0],
         closestCastle[1] + validLoc[1],
@@ -645,17 +654,19 @@ class MyRobot extends BCAbstractRobot {
       return this.move(moveX, moveY);
     }
   }
+  // Sets pilgrims' initial mining job
   initializePilgrim() {
     this.log('> > > FINDING THINGS > > >');
-    this.karboniteLocation = closestMiningLocation(
-      [this.me.x, this.me.y],
-      this.karbonite_map,
+    // 1st pilgrim mines karbonite. 2nd pilgrim mines fuel
+    this.resourceLocation =
+      visiblePilgrims(this) <= 1
+        ? closestMiningLocation([this.me.x, this.me.y], this.karbonite_map)
+        : closestMiningLocation([this.me.x, this.me.y], this.fuel_map);
+    this.log(
+      `VISPILGS < 1: ${visiblePilgrims(this) < 1} RESRC LOC: ${
+        this.resourceLocation
+      }, pilnum${visiblePilgrims(this)}`,
     );
-    this.fuelLocation = closestMiningLocation(
-      [this.me.x, this.me.y],
-      this.fuel_map,
-    );
-    this.log(`KARB LOC: ${this.karboniteLocation}`);
   }
 }
 // Prevent Rollup from removing the entire class for being unused
