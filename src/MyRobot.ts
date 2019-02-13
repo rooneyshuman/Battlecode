@@ -141,7 +141,8 @@ class MyRobot extends BCAbstractRobot {
       // Calculate closest karbonite/fuel location.
       this.log(`MY DEST IS ${this.resourceLocation}`)
       this.destination = this.resourceLocation;
-      this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(), [this.me.x, this.me.y], this.destination);
+      const robotMap = this.getVisibleRobotMap();
+      this.destinationQueue = simplePathFinder(this.map, robotMap, [this.me.x, this.me.y], this.destination);
       this.nextMove = this.destinationQueue.pop();
       this.goMining = true;
       this.log(` > > > CLOSEST MINING SPOT AT ${this.destination}> > >`);
@@ -167,9 +168,10 @@ class MyRobot extends BCAbstractRobot {
       }
       
       // Not near castle, set destination queue to nav to base
-      const validLoc = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
+      const visibleRobots = this.getVisibleRobotMap()
+      const validLoc = availableLoc(this.me.x, this.me.y, visibleRobots, this.map);
       this.destination = [closestCastle[0] + validLoc[0], closestCastle[1] + validLoc[1]];
-      this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
+      this.destinationQueue = simplePathFinder(this.map, visibleRobots,[this.me.x, this.me.y], this.destination);
       this.nextMove = this.destinationQueue.pop();
       this.log(` > > > MY LOCATION (${this.me.x}, ${this.me.y})> > >`);
       this.log(` > > > CLOSEST CASTLE AT ${this.destination}> > >`);
