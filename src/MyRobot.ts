@@ -45,14 +45,14 @@ class MyRobot extends BCAbstractRobot {
             if (rob.unit === SPECS.CASTLE) {
               this.enemyCastleLoc.push(enemyCastle(rob.x, rob.y, this.map.length, this, horizontal));
               this.destination = this.enemyCastleLoc[this.enemyCastleNum];
-              this.destinationQueue = simplePathFinder(this.map, [this.me.x, this.me.y], this.destination);
+              this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
               this.log("CASTLE LOCATION - PROPHET" + this.enemyCastleLoc[this.enemyCastleNum][0] + ", " + this.enemyCastleLoc[this.enemyCastleNum][1]);
             }
           }
         }
 
         if (this.runPathAgain > 0) {
-          this.destinationQueue = simplePathFinder(this.map, [this.me.x, this.me.y], this.destination);
+          this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
           this.runPathAgain--;
           return this.move(choice[0], choice[1]);
         }
@@ -75,7 +75,7 @@ class MyRobot extends BCAbstractRobot {
         }
 
         if (this.destinationQueue.length === 0) {
-          this.destinationQueue = simplePathFinder(this.map, [this.me.x, this.me.y], this.destination);
+          this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
         }
 
         return this.move(choice[0], choice[1]);
@@ -141,7 +141,7 @@ class MyRobot extends BCAbstractRobot {
       // Calculate closest karbonite/fuel location.
       this.log(`MY DEST IS ${this.resourceLocation}`)
       this.destination = this.resourceLocation;
-      this.destinationQueue = simplePathFinder(this.map, [this.me.x, this.me.y], this.destination);
+      this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(), [this.me.x, this.me.y], this.destination);
       this.nextMove = this.destinationQueue.pop();
       this.goMining = true;
       this.log(` > > > CLOSEST MINING SPOT AT ${this.destination}> > >`);
@@ -169,7 +169,7 @@ class MyRobot extends BCAbstractRobot {
       // Not near castle, set destination queue to nav to base
       const validLoc = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
       this.destination = [closestCastle[0] + validLoc[0], closestCastle[1] + validLoc[1]];
-      this.destinationQueue = simplePathFinder(this.map, [this.me.x, this.me.y], this.destination);
+      this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
       this.nextMove = this.destinationQueue.pop();
       this.log(` > > > MY LOCATION (${this.me.x}, ${this.me.y})> > >`);
       this.log(` > > > CLOSEST CASTLE AT ${this.destination}> > >`);

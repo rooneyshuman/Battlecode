@@ -191,14 +191,14 @@ function checkBounds(start: number[], toAdd: number[], mapDim: number): boolean 
   return true;
 }
 
-export function simplePathFinder(map: boolean[][], start: number[], dest: number[]): number[][] {
+export function simplePathFinder(passableMap: boolean[][], visionMap: number[][], start: number[], dest: number[]): number[][] {
   // Simple BFS pathfinder
   // Really bad.
-  const visited: boolean[][] = fillArray(map[0].length, false);
+  const visited: boolean[][] = fillArray(passableMap[0].length, false);
   // const gScore: number[][] = fillArray(map[0].length, Infinity);
   // const fScore: number[][] = fillArray(map[0].length, Infinity);
 
-  const parentCoord: number[][][] = fillArray(map[0].length, []);
+  const parentCoord: number[][][] = fillArray(passableMap[0].length, []);
   const moveQueue: number[][] = [];
   const queue = new PriorityQueue();
   const directions = adjChoices;
@@ -227,13 +227,15 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
     });
     for (const candidate of candidates) {
       // Check bounds
-      if ((candidate[1] >= 0 && candidate[1] < map[0].length) && (candidate[0] >= 0 && candidate[0] < map[0].length)) {
+      if ((candidate[1] >= 0 && candidate[1] < passableMap[0].length) && (candidate[0] >= 0 && candidate[0] < passableMap[0].length)) {
         // Check visit and passable
-        if (visited[candidate[1]][candidate[0]] !== true && map[candidate[1]][candidate[0]] === true) {
-          // If not visited and is passable, push to queue.
+        if (visited[candidate[1]][candidate[0]] !== true &&
+           passableMap[candidate[1]][candidate[0]] === true &&
+           visionMap[candidate[1]][candidate[0]] === 0) {
+          // If not visited, is passable, and has no robots, push to queue.
           parentCoord[candidate[1]][candidate[0]] = loc;
 
-          const test = manhatDist(candidate, dest);
+          // const test = manhatDist(candidate, dest);
           queue.insert({
             coord: candidate,
             priority: manhatDist(candidate, dest),
@@ -242,6 +244,8 @@ export function simplePathFinder(map: boolean[][], start: number[], dest: number
       }
     }
   }
+
+  // Grabs shortest path starting from pathEnd
   while (pathEnd !== undefined) {
     moveQueue.push(pathEnd);
     pathEnd = parentCoord[pathEnd[1]][pathEnd[0]];

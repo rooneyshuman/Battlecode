@@ -16,9 +16,12 @@ test("Closest Coords", () => {
 
 test("Pathfinding", () => {
     const testMap = fillArray(50, true);
+    const visionMap = fillArray(50, 0);
+    visionMap[1][1] = -1;
     const start = [0, 0];
-    const end = [49, 49];
-    const path = simplePathFinder(testMap, start, end);
+    const end = [2, 2];
+    const path = simplePathFinder(testMap, visionMap, start, end);
+    expect(path).toHaveLength(4)
 });
 
 test("Priority Queue", () => {
