@@ -115,8 +115,8 @@ class MyRobot extends BCAbstractRobot {
     }
 
     let full;
-
-    if (this.me.karbonite === 20 || this.me.fuel === 100) {
+	
+	if (this.me.karbonite === 20 || this.me.fuel === 100) {
       full = true;
       // TODO: Make pilgrim walk back to castle if inventory is full.
       this.log("---FULL INVENTORY, RETURNING TO BASE---");
@@ -184,7 +184,7 @@ class MyRobot extends BCAbstractRobot {
 
   // Sets pilgrims' initial mining job
   private initializePilgrim() {
-    this.log("> > > FINDING THINGS > > >")
+    this.log("> > > FINDING THINGS > > >");
     const visibleRobots = this.getVisibleRobotMap();
     // 1st pilgrim mines karbonite. 2nd pilgrim mines fuel
     // Even pilgrims mine karbonite, odd pilgrims mine fuel.
