@@ -57,7 +57,7 @@ class MyRobot extends BCAbstractRobot {
         // get castle coordinates
         if (this.me.turn === 1) {
           const horizontal = horizontalFlip(this);
-          this.enemyCastleLoc.push(enemyCastle([this.me.x, this.me.y], this.map));
+          this.enemyCastleLoc.push(enemyCastle([this.me.x, this.me.y], this.map, horizontal));
           this.log("CASTLE LOCATION" + this.enemyCastleLoc[this.enemyCastleNum][0] + ", " + this.enemyCastleLoc[this.enemyCastleNum][1]);
         }
         return this.handleCastle();
@@ -208,7 +208,7 @@ class MyRobot extends BCAbstractRobot {
   }
 
   private handleProphet(): Action | Falsy {
-    // const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
+     // const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
     if (this.me.turn === 1) {
       this.log("> > PROPHET FIRST TURN > >")
       const visibleRobots = this.getVisibleRobots();
@@ -217,22 +217,14 @@ class MyRobot extends BCAbstractRobot {
       for (let i = 0; i < listLength; ++i) {
         const rob = visibleRobots[i];
         if (rob.unit === SPECS.CASTLE) {
-          const enemyCastleLoc = enemyCastle([rob.x, rob.y], this.map);
+          const horizontal = horizontalFlip(this);
+          const enemyCastleLoc = enemyCastle([rob.x, rob.y], this.map, horizontal);
           this.enemyCastleLoc.push(enemyCastleLoc);
           this.destination = this.enemyCastleLoc[this.enemyCastleNum];
           this.destinationQueue = simplePathFinder(this.map, robotMap, [this.me.x, this.me.y], this.destination);
           this.log("CASTLE LOCATION - PROPHET" + this.enemyCastleLoc[this.enemyCastleNum][0] + ", " + this.enemyCastleLoc[this.enemyCastleNum][1]);
         }
       }
-    }
-    if (this.runPathAgain > 0) {
-      this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
-      this.runPathAgain--;
-      this.nextMove = this.destinationQueue.pop();
-      const moveX = this.nextMove[0] - this.me.x;
-      const moveY = this.nextMove[1] - this.me.y;
-      this.log(`> > > MOVING ${moveX}, ${moveY} > > >`)
-      return this.move(moveX, moveY);
     }
 
     // this.log(`Prophet health: ${this.me.health}`);
@@ -242,10 +234,22 @@ class MyRobot extends BCAbstractRobot {
       return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
     }
 
+    if (this.runPathAgain > 0) {
+
+      const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
+	  this.runPathAgain--;
+      return this.move(choice[0], choice[1]);
+    }
+	else if(this.runPathAgain === 1)
+	{
+      this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
+	  this.runPathAgain = 0;
+	}
+
     if (this.enemyCastleLoc !== null && (this.destinationQueue !== undefined && this.destinationQueue.length !== 0)) {
       const toMove = rushCastle(this, this.destination, this.destinationQueue);
       if (toMove === null) {
-        this.runPathAgain = 1;
+        this.runPathAgain = 2;
       }
       else {
         return this.move(toMove[0], toMove[1]);
@@ -255,6 +259,9 @@ class MyRobot extends BCAbstractRobot {
     if (this.destinationQueue.length === 0) {
       this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
     }
+	
+    const choicer: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
+	return this.move(choicer[0], choicer[1]);
   }
 }
 
