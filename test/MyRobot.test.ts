@@ -9,8 +9,8 @@ test("Closest Mining Location", () => {
     testMap[0][1] = true;
 
     const visibleRobotMap = fillArray(testMapSize, 0);
-    visibleRobotMap[0][0] = -1;
-    visibleRobotMap[0][1] = -1;
+    visibleRobotMap[0][0] = 50;
+    visibleRobotMap[0][1] = 55;
 
     const myLoc = [0, 0]
     const location = closestMiningLocation(myLoc, testMap, visibleRobotMap)

@@ -1,7 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { availableLoc, visiblePilgrims } from "./utils";
 
-export function castleBuild(self: BCAbstractRobot, unitCount: any): BuildAction | Falsy {
+export function castleBuild(self: BCAbstractRobot): BuildAction | Falsy {
     const visionMap = self.getVisibleRobotMap();
     const buildLoc: number[] = availableLoc(self.me.x, self.me.y, visionMap, self.map);
 
@@ -15,9 +15,8 @@ export function castleBuild(self: BCAbstractRobot, unitCount: any): BuildAction 
     }
 
     // Check if open location and if enough karb for prophet
-    if (self.karbonite >= 25 && buildLoc && unitCount.prophet === 0) {
+    if (self.karbonite >= 25 && buildLoc) {
         // Temporarily only build 1 prophet
-        unitCount.prophet += 1;
         self.log(`Building a prophet at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
         return self.buildUnit(SPECS.PROPHET, buildLoc[0], buildLoc[1]);
     }

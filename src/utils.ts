@@ -103,7 +103,7 @@ export function closestMiningLocation(loc: number[], map: boolean[][], visibleRo
   let closestLoc;
   for (let y = 0; y < map.length; y++) {
     for (let x = 0; x < map.length; x++) {
-      if (map[y][x] && (visibleRobotMap[y][x] === 0)) {
+      if (map[y][x] === true && (visibleRobotMap[y][x] <= 0)) {
         if (manhatDist([x, y], loc) < closestDist) {
           closestDist = manhatDist([x, y], loc);
           closestLoc = [x, y];
@@ -255,7 +255,7 @@ export function simplePathFinder(passableMap: boolean[][], visionMap: number[][]
         // Check visit and passable
         if (visited[candidate[1]][candidate[0]] !== true &&
            passableMap[candidate[1]][candidate[0]] === true &&
-           visionMap[candidate[1]][candidate[0]] === 0) {
+           visionMap[candidate[1]][candidate[0]] <= 0) {
           // If not visited, is passable, and has no robots, push to queue.
           parentCoord[candidate[1]][candidate[0]] = loc;
 

@@ -90,7 +90,7 @@ class MyRobot extends BCAbstractRobot {
     // Check if enough karb to build
     if (this.karbonite >= 10) {
       this.log(`Enough karb to build..`)
-      return castleBuild(this, this.unitCount);
+      return castleBuild(this);
     }
   }
 
@@ -225,11 +225,14 @@ class MyRobot extends BCAbstractRobot {
         }
       }
     }
-    /*
     if (this.runPathAgain > 0) {
       this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
       this.runPathAgain--;
-      return this.move(choice[0], choice[1]);
+      this.nextMove = this.destinationQueue.pop();
+      const moveX = this.nextMove[0] - this.me.x;
+      const moveY = this.nextMove[1] - this.me.y;
+      this.log(`> > > MOVING ${moveX}, ${moveY} > > >`)
+      return this.move(moveX, moveY);
     }
 
     // this.log(`Prophet health: ${this.me.health}`);
@@ -252,8 +255,6 @@ class MyRobot extends BCAbstractRobot {
     if (this.destinationQueue.length === 0) {
       this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
     }
-    */
-    // return this.move(choice[0], choice[1]);
   }
 }
 
