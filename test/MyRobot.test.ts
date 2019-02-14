@@ -1,10 +1,20 @@
 import { PriorityQueue } from "../src/PriorityQueue";
-import { availableLoc, closestCoords, closestMiningLocation, fillArray, simplePathFinder } from "../src/utils";
+import { availableLoc, closestCoords, closestMiningLocation, enemyCastle, fillArray, simplePathFinder } from "../src/utils";
 
 test("Closest Mining Location", () => {
-    const testMap = [[true, true, false], [false, false, false], [false, false, true]]
-    const location = closestMiningLocation([2, 1], testMap)
-    expect(location).toEqual([2, 2]);
+    const testMapSize = 50;
+    const testMap = fillArray(testMapSize, false)
+    testMap[49][49] = true
+    testMap[0][0] = true
+    testMap[0][1] = true;
+
+    const visibleRobotMap = fillArray(testMapSize, 0);
+    visibleRobotMap[0][0] = 50;
+    visibleRobotMap[0][1] = 55;
+
+    const myLoc = [0, 0]
+    const location = closestMiningLocation(myLoc, testMap, visibleRobotMap)
+    expect(location).toEqual([49, 49]);
 });
 
 test("Closest Coords", () => {
@@ -16,9 +26,13 @@ test("Closest Coords", () => {
 
 test("Pathfinding", () => {
     const testMap = fillArray(50, true);
+    const visionMap = fillArray(50, 0);
+    visionMap[1][1] = -1;
+    visionMap[1][0] = -1;
     const start = [0, 0];
-    const end = [49, 49];
-    const path = simplePathFinder(testMap, start, end);
+    const end = [2, 2];
+    const path = simplePathFinder(testMap, visionMap, start, end);
+    expect(path).toHaveLength(4)
 });
 
 test("Priority Queue", () => {
@@ -118,3 +132,11 @@ test("Available Location", () => {
     loc = availableLoc(1, 1, testMap, myMap);
     expect(loc).toEqual([1, -1]);
 })
+
+test("Enemy Castle", () => {
+    const myCastleLoc = [0, 0]
+    const enemyCastleLoc = [0, 3]
+    const testMap = fillArray(4, true);
+    const enemyCastleTest = enemyCastle(myCastleLoc, testMap)
+    expect(enemyCastleTest).toEqual([0, 3])
+});

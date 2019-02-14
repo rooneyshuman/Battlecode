@@ -5,3 +5,4 @@ replay.bc19
 slnx.sqlite
 package-lock.json
 *.sqlite-journal
+log.txt
