@@ -234,7 +234,7 @@ class MyRobot extends BCAbstractRobot {
       return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
     }
 
-    if (this.runPathAgain > 0) {
+    if (this.runPathAgain > 1) {
 
       const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
 	  this.runPathAgain--;
@@ -244,6 +244,7 @@ class MyRobot extends BCAbstractRobot {
 	{
       this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
 	  this.runPathAgain = 0;
+	  this.runPathAgain--;
 	}
 
     if (this.enemyCastleLoc !== null && (this.destinationQueue !== undefined && this.destinationQueue.length !== 0)) {

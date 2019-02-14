@@ -74,6 +74,7 @@ export function rushCastle(self: any, dest: number[], destQ: number[][]) {
 		const moveX = nextMove[0] - self.me.x;
 		const moveY = nextMove[1] - self.me.y;
 
+		/*
 		const visibleRobots = self.getVisibleRobots();
 		const listLength = visibleRobots.length;
 		let i;
@@ -83,7 +84,7 @@ export function rushCastle(self: any, dest: number[], destQ: number[][]) {
 				return null;
 			}
 		}
-
+*/
 		self.log(`* * * * * MOVING ${moveX}, ${moveY} > > >`)
 		toMove[0] = moveX;
 		toMove[1] = moveY;

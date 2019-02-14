@@ -79,15 +79,17 @@ function rushCastle(self, dest, destQ) {
     nextMove = destQ.pop();
     const moveX = nextMove[0] - self.me.x;
     const moveY = nextMove[1] - self.me.y;
-    const visibleRobots = self.getVisibleRobots();
-    const listLength = visibleRobots.length;
-    let i;
-    for (i = 0; i < listLength; ++i) {
-      const rob = visibleRobots[i];
-      if (rob.x === nextMove[0] && rob.y === nextMove[1]) {
-        return null;
-      }
-    }
+    /*
+        const visibleRobots = self.getVisibleRobots();
+        const listLength = visibleRobots.length;
+        let i;
+        for (i = 0; i < listLength; ++i) {
+            const rob = visibleRobots[i];
+            if (rob.x === nextMove[0] && rob.y === nextMove[1]) {
+                return null;
+            }
+        }
+*/
     self.log(`* * * * * MOVING ${moveX}, ${moveY} > > >`);
     toMove[0] = moveX;
     toMove[1] = moveY;
@@ -739,7 +741,7 @@ class MyRobot extends BCAbstractRobot {
           );
   }
   handleProphet() {
-    //const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
+    // const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
     if (this.me.turn === 1) {
       this.log('> > PROPHET FIRST TURN > >');
       const visibleRobots = this.getVisibleRobots();
@@ -776,7 +778,7 @@ class MyRobot extends BCAbstractRobot {
     if (attackingCoordinates) {
       return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
     }
-    if (this.runPathAgain > 0) {
+    if (this.runPathAgain > 1) {
       const choice = availableLoc(
         this.me.x,
         this.me.y,
@@ -793,6 +795,7 @@ class MyRobot extends BCAbstractRobot {
         this.destination,
       );
       this.runPathAgain = 0;
+      this.runPathAgain--;
     }
     if (
       this.enemyCastleLoc !== null &&
@@ -814,13 +817,13 @@ class MyRobot extends BCAbstractRobot {
         this.destination,
       );
     }
-    const choice = availableLoc(
+    const choicer = availableLoc(
       this.me.x,
       this.me.y,
       this.getVisibleRobotMap(),
       this.map,
     );
-    return this.move(choice[0], choice[1]);
+    return this.move(choicer[0], choicer[1]);
   }
 }
 // Prevent Rollup from removing the entire class for being unused
