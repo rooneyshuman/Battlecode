@@ -74,9 +74,9 @@ export function randomValidLoc(self: BCAbstractRobot): number[] {
  * @returns { number [] } Array containing elements that consist of [x , y]
  */
 export function availableLoc(selfX: number, selfY: number, visionMap: number[][], passableMap: boolean [][]): number[] {
-  let avail: number[] = [];
+  // let avail: number[] = [];
 
-  for (avail of adjChoices) {
+  for (const avail of adjChoices) {
     const xCoord = avail[0] + selfX;
     const yCoord = avail[1] + selfY;
     const inBounds = checkBounds([selfX, selfY], avail, visionMap[0].length);
@@ -98,18 +98,42 @@ export function availableLoc(selfX: number, selfY: number, visionMap: number[][]
  * @param { number [] } myLocation, { boolean [][] } resourceMap
  * @returns { number [] } Array containing elements that consist of [x , y]
  */
-export function closestMiningLocation(loc: number[], map: boolean[][]): number[] {
+export function closestMiningLocation(loc: number[], map: boolean[][], visibleRobotMap: number[][]): number[] {
   let closestDist = Infinity;
   let closestLoc;
   for (let y = 0; y < map.length; y++) {
     for (let x = 0; x < map.length; x++) {
-      if (map[y][x] && (manhatDist([x, y], loc) < closestDist)) {
-        closestDist = manhatDist([x, y], loc);
-        closestLoc = [x, y];
+      if (map[y][x] && (visibleRobotMap[y][x] === 0)) {
+        if (manhatDist([x, y], loc) < closestDist) {
+          closestDist = manhatDist([x, y], loc);
+          closestLoc = [x, y];
+        }
       }
     }
   }
   return closestLoc;
+}
+
+
+export function findResources(map1: boolean[][], map2: boolean[][]) {
+  const locations = [];
+  for (let y = 0; y < map1.length; y++) {
+    for (let x = 0; x < map1.length; x++) {
+      if (map1[y][x] === true) {
+        locations.push([x, y]);
+      }
+    }
+  }
+
+  for (let y = 0; y < map2.length; y++) {
+    for (let x = 0; x < map2.length; x++) {
+      if (map2[y][x] === true) {
+        locations.push([x, y]);
+      }
+    }
+  }
+
+  return locations;
 }
 
 /**
@@ -295,22 +319,23 @@ export function visiblePilgrims(self: BCAbstractRobot): number {
 
 // Function will take in one of our castles and reflect its position to obtain
 // the location of an enemy castle
-export function enemyCastle(xcor: number, ycor: number, mapLength: number, self: any, horizontal: boolean) {
+export function enemyCastle(selfLoc: number[], map: boolean[][]) {
   // vertical reflection on the castle	
+  const mapLength = map.length;
+  const xcor = selfLoc[0];
+  const ycor = selfLoc[1];
   const coordinateVertical: number[] = [mapLength - xcor - 1, ycor];
   const coordinateHorizontal: number[] = [xcor, mapLength - ycor - 1];
 
-  if (!horizontal) { return coordinateVertical; }
+  if (!map[coordinateVertical[1]][coordinateVertical[0]]) { return coordinateVertical; }
   else { return coordinateHorizontal; }
 }
 
 export function horizontalFlip(self: any) {
   const length: number = self.map.length;
-  let x;
-  let y;
-  for (x = 0; x < length; ++x) {
-    for (y = 0; y < length; ++y) {
-      if (!(self.map[x][y] === self.map[length - x - 1][y])) {
+  for (let x = 0; x < length; ++x) {
+    for (let y = 0; y < length; ++y) {
+      if (!(self.map[y][x] === self.map[y][length - x - 1])) {
         return false;
       }
     }
