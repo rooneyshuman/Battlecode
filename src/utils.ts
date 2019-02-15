@@ -319,16 +319,25 @@ export function visiblePilgrims(self: BCAbstractRobot): number {
 
 // Function will take in one of our castles and reflect its position to obtain
 // the location of an enemy castle
-export function enemyCastle(selfLoc: number[], map: boolean[][]) {
+export function enemyCastle(selfLoc: number[], map: boolean[][], horizontal:boolean) {
   // vertical reflection on the castle	
+  
   const mapLength = map.length;
   const xcor = selfLoc[0];
   const ycor = selfLoc[1];
+  /*
   const coordinateVertical: number[] = [mapLength - xcor - 1, ycor];
   const coordinateHorizontal: number[] = [xcor, mapLength - ycor - 1];
 
   if (!map[coordinateVertical[1]][coordinateVertical[0]]) { return coordinateVertical; }
   else { return coordinateHorizontal; }
+  */
+  const coordinateVertical: number[] = [mapLength - xcor - 1, ycor];
+  const coordinateHorizontal: number[] = [xcor, mapLength - ycor - 1];
+
+  if (!horizontal) { return coordinateHorizontal; }
+  else { return coordinateVertical; }
+
 }
 
 export function horizontalFlip(self: any) {
