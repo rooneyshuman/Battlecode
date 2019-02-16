@@ -13,8 +13,10 @@ class MyRobot extends BCAbstractRobot {
   private enemyCastleNum: number = 0;
   private runPathAgain: number = 0;
   private unitCount = {
-    prophet: 0,
-    pilgrim: 0
+        pilgrim: 0,
+        prophet: 0,
+        crusader: 0,
+        preacher: 0,
   }
 
   public turn(): Action | Falsy {
@@ -90,7 +92,7 @@ class MyRobot extends BCAbstractRobot {
     // Check if enough karb to build
     if (this.karbonite >= 10) {
       this.log(`Enough karb to build..`)
-      return castleBuild(this);
+      return castleBuild(this, this.unitCount);
     }
   }
 
