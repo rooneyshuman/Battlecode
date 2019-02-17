@@ -58,65 +58,6 @@ function attackFirst(self) {
   }
   return robotToAttack;
 }
-/**
- * Rushes robot castle
- * @param self
- * @param dest
- * @param destQ
- */
-function rushCastle(self, dest, destQ) {
-  let nextMove;
-  const toMove = new Array(2);
-  nextMove = destQ.pop();
-  self.log('LOOOK HERE' + nextMove[0] + ', ' + nextMove[1]);
-  self.log('DDSADASD ' + self.me.x + ', ' + self.me.y);
-  if (
-    destQ.length !== 0 &&
-    (self.me.x === nextMove[0] && self.me.y === nextMove[1])
-  ) {
-    // If the destination queue has coordinates and my current location is the
-    // same as my next move's location, then pop next destination and set nextMove to it.
-    nextMove = destQ.pop();
-    const moveX = nextMove[0] - self.me.x;
-    const moveY = nextMove[1] - self.me.y;
-    /*
-        const visibleRobots = self.getVisibleRobots();
-        const listLength = visibleRobots.length;
-        let i;
-        for (i = 0; i < listLength; ++i) {
-            const rob = visibleRobots[i];
-            if (rob.x === nextMove[0] && rob.y === nextMove[1]) {
-                return null;
-            }
-        }
-*/
-    self.log(`* * * * * MOVING ${moveX}, ${moveY} > > >`);
-    toMove[0] = moveX;
-    toMove[1] = moveY;
-    return toMove;
-    // return self.move(moveX, moveY);
-  } else {
-    const moveX = nextMove[0] - self.me.x;
-    const moveY = nextMove[1] - self.me.y;
-    const visibleRobots = self.getVisibleRobots();
-    const listLength = visibleRobots.length;
-    let i;
-    for (i = 0; i < listLength; ++i) {
-      const rob = visibleRobots[i];
-      if (rob.x === nextMove[0] && rob.y === nextMove[1]) {
-        return null;
-      }
-    }
-    self.log(`**** ME (${self.me.x}, ${self.me.y}) > > >`);
-    self.log(`***** nextMove ${nextMove} > > >`);
-    self.log(`*(**** MOVING (${moveX}, ${moveY}) > > >`);
-    self.log(`****DEST ${dest} > > >`);
-    toMove[0] = moveX;
-    toMove[1] = moveY;
-    return toMove;
-    // return self.move(moveX, moveY);
-  }
-}
 
 class PriorityQueue {
   constructor(comparator = (a, b) => a.priority > b.priority) {
@@ -472,14 +413,12 @@ function castleBuild(self) {
     return self.buildUnit(SPECS.PROPHET, buildLoc[0], buildLoc[1]);
   }
   // Check if open location and enough karb for pilgrim
-  else if (self.karbonite >= 10 && buildLoc && self.me.turn % 1000) {
-    self.log(
-      `Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${
-        self.me.turn
-      })`,
-    );
-    return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
-  }
+  /*
+    else if (self.karbonite >= 10 && buildLoc && (self.me.turn % 1000)){
+        self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
+        return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
+    }
+    */
 }
 
 function handleProphet(self) {
@@ -498,6 +437,7 @@ function handleProphet(self) {
           self.map,
           horizontal,
         );
+        self.friendlyCastleLoc.push([rob.x, rob.y]);
         self.enemyCastleLoc.push(enemyCastleLoc);
         self.destination = self.enemyCastleLoc[self.enemyCastleNum];
         self.destinationQueue = simplePathFinder(
@@ -520,32 +460,197 @@ function handleProphet(self) {
   if (attackingCoordinates) {
     return self.attack(attackingCoordinates[0], attackingCoordinates[1]);
   }
-  if (self.runPathAgain > 1) {
-    const choice = availableLoc(
-      self.me.x,
-      self.me.y,
-      self.getVisibleRobotMap(),
-      self.map,
+  return checkerBoardMovement(self);
+  // return rushMovement(self);
+}
+function checkerBoardMovement(self) {
+  const formation = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+  if (self.checkerBoardSpot === undefined) {
+    self.checkerBoardSpot = firstSpot(self);
+  }
+  if (self.map[self.destination[1]][self.destination[0]] === false) {
+    self.log('DESTINATION IMPASSABLE');
+    return null;
+  }
+  const visionMap = self.getVisibleRobotMap();
+  self.log('SELF.DESTIONATION:::::' + self.destination);
+  self.log('visionMap ' + visionMap[self.destination[1]][self.destination[0]]);
+  if (self.me.x === self.destination[0] && self.me.y === self.destination[1]) {
+    self.log('AT DESTINATION');
+    return null;
+  } else if (visionMap[self.destination[1]][self.destination[0]] > 0) {
+    self.log('SELF.DESTIONATION:::::' + self.destination);
+    self.log(
+      'visionMap ' + visionMap[self.destination[1]][self.destination[0]],
     );
-    self.runPathAgain--;
-    return self.move(choice[0], choice[1]);
-  } else if (self.runPathAgain === 1) {
+    const firstX = self.destination[0];
+    const firstY = self.destination[1];
+    let i;
+    for (i = 0; i < 4; ++i) {
+      const newX = firstX + formation[i][0];
+      const newY = firstY + formation[i][1];
+      if (visionMap[newY][newX] === 0 && self.map[newY][newX] === true) {
+        self.log('HELLLLOOOOOO : : : ' + newX + ', ' + newY);
+        self.destination[0] = newX;
+        self.destination[1] = newY;
+        self.log(
+          'AAAAAAAAAAAAAAAAAAAAAAA:: ' +
+            self.destination[0] +
+            ', ' +
+            self.destination[1],
+        );
+        i = 5;
+        self.destinationQueue = simplePathFinder(
+          self.map,
+          self.getVisibleRobotMap(),
+          [self.me.x, self.me.y],
+          self.destination,
+        );
+        self.destinationQueue.pop();
+      }
+    }
+    if (i === 4) {
+      for (i = 0; i < 4; ++i) {
+        const newX = firstX + formation[i][0];
+        const newY = firstY + formation[i][1];
+        if (self.map[newY][newX] === true) {
+          self.destination[0] = newX;
+          self.destination[1] = newY;
+          i = 5;
+          self.destinationQueue = simplePathFinder(
+            self.map,
+            self.getVisibleRobotMap(),
+            [self.me.x, self.me.y],
+            self.destination,
+          );
+          self.destinationQueue.pop();
+        }
+      }
+    }
+    self.log('NEW DESTIONATION :::::: ' + self.destination);
+  }
+  return goTo(self);
+}
+function firstSpot(self) {
+  // Move to first initial spot. If it is already occupied check to see if one of the formation
+  // spots are available and move there.
+  const horizontal = horizontalFlip(self);
+  let firstSpots;
+  const visionMap = self.getVisibleRobotMap();
+  const inBounds = false;
+  if (!horizontal) {
+    if (self.enemyCastleLoc[1] > self.me.y) {
+      self.log('*****************X********');
+      firstSpots = [self.me.x, self.me.y - 3];
+      while (!inBounds) {
+        if (self.map[firstSpots[1]][firstSpots[0]] === true) {
+          break;
+        }
+        firstSpots[0] = firstSpots[0] - 1;
+      }
+    } else {
+      firstSpots = [self.me.x, self.me.y + 3];
+      self.log('*****************1********');
+      while (!inBounds) {
+        if (self.map[firstSpots[1]][firstSpots[0]] === true) {
+          break;
+        }
+        firstSpots[0] = firstSpots[0] - 1;
+      }
+    }
+  } else {
+    if (self.enemyCastleLoc[0] > self.me.x) {
+      firstSpots = [self.me.x - 3, self.me.y];
+      self.log('*****************2********');
+      while (!inBounds) {
+        if (self.map[firstSpots[1]][firstSpots[0]] === true) {
+          break;
+        }
+        firstSpots[1] = firstSpots[1] - 1;
+      }
+    } else {
+      firstSpots = [self.me.x + 3, self.me.y];
+      self.log('*****************3********');
+      while (!inBounds) {
+        if (self.map[firstSpots[1]][firstSpots[0]] === true) {
+          break;
+        }
+        firstSpots[1] = firstSpots[1] - 1;
+      }
+    }
+  }
+  if (self.map[self.destination[1]][self.destination[0]] === false) {
+    self.log('DESTINATION IMPASSABLEaaaaaaaaaaaa');
+    return null;
+  }
+  self.destination = firstSpots;
+  const visibleRobots = self.getVisibleRobots();
+  const listLength = visibleRobots.length;
+  let i;
+  for (i = 0; i < listLength; ++i) {
+    const rob = visibleRobots[i];
+    if (rob.x === self.destination[0] && rob.y === self.destination[1]) {
+      return null;
+    }
+  }
+  self.destinationQueue = simplePathFinder(
+    self.map,
+    self.getVisibleRobotMap(),
+    [self.me.x, self.me.y],
+    self.destination,
+  );
+  self.destinationQueue.pop();
+  return firstSpots;
+}
+function goTo(self) {
+  if (self.runPathAgain === 1) {
+    if (
+      availableLoc(
+        self.me.x,
+        self.me.y,
+        self.getVisibleRobotMap(),
+        self.map,
+      ) === null
+    ) {
+      return null;
+    }
     self.destinationQueue = simplePathFinder(
       self.map,
       self.getVisibleRobotMap(),
       [self.me.x, self.me.y],
       self.destination,
     );
-    self.runPathAgain = 0;
+    self.destinationQueue.pop();
     self.runPathAgain--;
+  }
+  if (
+    availableLoc(self.me.x, self.me.y, self.getVisibleRobotMap(), self.map) ===
+    null
+  ) {
+    return null;
   }
   if (
     self.enemyCastleLoc !== null &&
     (self.destinationQueue !== undefined && self.destinationQueue.length !== 0)
   ) {
-    const toMove = rushCastle(self, self.destination, self.destinationQueue);
+    const toMove = self.destinationQueue.pop();
+    self.log('DSADSADSADSADSA    ' + toMove);
+    toMove[0] = toMove[0] - self.me.x;
+    toMove[1] = toMove[1] - self.me.y;
+    self.log('TO MOVE ++++++ :' + toMove);
+    self.log('DESTINATION +++++ : ' + self.destination);
+    const visibleRobots = self.getVisibleRobots();
+    const listLength = visibleRobots.length;
+    let i;
+    for (i = 0; i < listLength; ++i) {
+      const rob = visibleRobots[i];
+      if (rob.x === toMove[0] && rob.y === toMove[1]) {
+        self.runPathAgain = 1;
+        return null;
+      }
+    }
     if (toMove === null) {
-      self.runPathAgain = 2;
+      self.runPathAgain = 1;
     } else {
       return self.move(toMove[0], toMove[1]);
     }
@@ -558,13 +663,7 @@ function handleProphet(self) {
       self.destination,
     );
   }
-  const choicer = availableLoc(
-    self.me.x,
-    self.me.y,
-    self.getVisibleRobotMap(),
-    self.map,
-  );
-  return self.move(choicer[0], choicer[1]);
+  return null;
 }
 
 class MyRobot extends BCAbstractRobot {
@@ -582,6 +681,8 @@ class MyRobot extends BCAbstractRobot {
     this.enemyCastleNum = 0;
     this.runPathAgain = 0;
     this.nextMove = undefined;
+    this.friendlyCastleLoc = [];
+    this.checkerBoardSpot = undefined;
   }
   turn() {
     switch (this.me.unit) {

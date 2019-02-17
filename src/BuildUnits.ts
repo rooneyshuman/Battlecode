@@ -22,10 +22,12 @@ export function castleBuild(self: BCAbstractRobot): BuildAction | Falsy {
     }
 
     // Check if open location and enough karb for pilgrim 
-    else if (self.karbonite >= 10 && buildLoc && self.me.turn % 1000){
+	/*
+    else if (self.karbonite >= 10 && buildLoc && (self.me.turn % 1000)){
         self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
         return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
     }
+	*/
 }
 
 export function pilgrimBuild(self: any): BuildAction | Falsy {

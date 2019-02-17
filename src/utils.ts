@@ -198,7 +198,7 @@ export function fillArray(max: number, el: any) {
  * @param { number [] } start, { number [] } [dx, dy], { number } mapDimensions 
  * @returns { boolean[]} true/false if location is/not within bounds
  */
-function checkBounds(start: number[], toAdd: number[], mapDim: number): boolean {
+export function checkBounds(start: number[], toAdd: number[], mapDim: number): boolean {
   const xCoord = start[0] + toAdd[0];
   const yCoord = start[1] + toAdd[1];
 

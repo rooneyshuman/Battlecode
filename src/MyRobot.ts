@@ -11,6 +11,8 @@ class MyRobot extends BCAbstractRobot {
 	private enemyCastleNum: number;
 	private runPathAgain: number;
 	private nextMove: number[];
+	private friendlyCastleLoc: number[][];
+	private checkerBoardSpot: number[];
 
     private resourceLocation: number[] = undefined;
     private goMining: boolean = false;
@@ -26,6 +28,8 @@ class MyRobot extends BCAbstractRobot {
 		this.enemyCastleNum = 0;
 		this.runPathAgain = 0;
 		this.nextMove = undefined;
+		this.friendlyCastleLoc = [];
+		this.checkerBoardSpot = undefined;
 	}
 
 
