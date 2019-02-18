@@ -469,7 +469,7 @@ function checkerBoardMovement(self) {
     self.checkerBoardSpot = firstSpot(self);
   }
   if (self.map[self.destination[1]][self.destination[0]] === false) {
-    self.log('DESTINATION IMPASSABLE');
+    self.log('DESTINATION IMPASSABLE' + '     ' + self.destination);
     return null;
   }
   const visionMap = self.getVisibleRobotMap();
@@ -479,26 +479,39 @@ function checkerBoardMovement(self) {
     self.log('AT DESTINATION');
     return null;
   } else if (visionMap[self.destination[1]][self.destination[0]] > 0) {
-    self.log('SELF.DESTIONATION:::::' + self.destination);
-    self.log(
-      'visionMap ' + visionMap[self.destination[1]][self.destination[0]],
-    );
     const firstX = self.destination[0];
     const firstY = self.destination[1];
+    self.visitedBots.push(visionMap[firstY][firstX]);
     let i;
     for (i = 0; i < 4; ++i) {
       const newX = firstX + formation[i][0];
       const newY = firstY + formation[i][1];
-      if (visionMap[newY][newX] === 0 && self.map[newY][newX] === true) {
+      // Make sure unit is also not going to a karbonite or fuel tile
+      let resourceCheck = true;
+      if (
+        self.karbonite_map[newY][newX] === true ||
+        self.fuel_map[newY][newX] === true
+      ) {
+        resourceCheck = false;
+      }
+      // Make sure that it is not too close to the CASTLE
+      const dist = manhatDist(self.friendlyCastleLoc[0], [newX, newY]);
+      let distCheck = true;
+      if (dist < 3) {
+        distCheck = false;
+      }
+      if (newX < 0 || newY < 0) {
+        continue;
+      }
+      if (
+        visionMap[newY][newX] === 0 &&
+        self.map[newY][newX] === true &&
+        resourceCheck === true &&
+        distCheck === true
+      ) {
         self.log('HELLLLOOOOOO : : : ' + newX + ', ' + newY);
         self.destination[0] = newX;
         self.destination[1] = newY;
-        self.log(
-          'AAAAAAAAAAAAAAAAAAAAAAA:: ' +
-            self.destination[0] +
-            ', ' +
-            self.destination[1],
-        );
         i = 5;
         self.destinationQueue = simplePathFinder(
           self.map,
@@ -508,24 +521,86 @@ function checkerBoardMovement(self) {
         );
         self.destinationQueue.pop();
       }
-    }
-    if (i === 4) {
-      for (i = 0; i < 4; ++i) {
-        const newX = firstX + formation[i][0];
-        const newY = firstY + formation[i][1];
-        if (self.map[newY][newX] === true) {
-          self.destination[0] = newX;
-          self.destination[1] = newY;
-          i = 5;
-          self.destinationQueue = simplePathFinder(
-            self.map,
-            self.getVisibleRobotMap(),
-            [self.me.x, self.me.y],
-            self.destination,
-          );
-          self.destinationQueue.pop();
+      if (i === 3) {
+        let x;
+        self.log('NO NEW SPACES AVAILABLE CHANGE DESTINATION');
+        for (x = 0; x < 4; ++x) {
+          const nextpointX = firstX + formation[x][0];
+          const nextpointY = firstY + formation[x][1];
+          if (
+            nextpointX === 0 ||
+            nextpointY === 0 ||
+            nextpointX === self.map.length - 1 ||
+            nextpointY === self.map.length - 1
+          ) {
+            continue;
+          }
+          let resourceChecks = true;
+          if (
+            self.karbonite_map[nextpointY][nextpointX] === true ||
+            self.fuel_map[nextpointY][nextpointX] === true
+          ) {
+            resourceChecks = false;
+          }
+          // Make sure that it is not too close to the CASTLE
+          const disti = manhatDist(self.friendlyCastleLoc[0], [
+            nextpointX,
+            nextpointY,
+          ]);
+          let distChecks = true;
+          if (disti < 3) {
+            distChecks = false;
+          }
+          if (self.visitedBots.includes(visionMap[nextpointY][nextpointX])) {
+            continue;
+          }
+          if (
+            resourceChecks === false ||
+            distChecks === false ||
+            self.map[nextpointY][nextpointX] === false
+          ) {
+            continue;
+          }
+          self.destination[0] = nextpointX;
+          self.destination[1] = nextpointY;
+          break;
         }
       }
+    }
+    if (i === 4) {
+      return null;
+      /*			for(i = 0; i < 4; ++i)
+                        {
+                            const newX = firstX + formation[i][0];
+                            const newY = firstY + formation[i][1];
+                            if(newX < 0 || newY < 0 )
+                            {continue;}
+            
+                            let dist = manhatDist(self.friendlyCastleLoc[0], [newX, newY]);
+                            let distCheck = true;
+                            if(dist > 2)
+                            {distCheck = true;}
+            
+                            let resourceCheck = true;
+                            if(self.karbonite_map[newY][newX] === true || self.fuel_map[newY][newX] === true)
+                            {resourceCheck = false;}
+            
+            
+                            if(self.map[newY][newX] === true && resourceCheck === true && distCheck === true){
+                                self.destination[0] = newX;
+                                self.destination[1] = newY;
+                                i = 5;
+                                self.destinationQueue = simplePathFinder(self.map, self.getVisibleRobotMap(),[self.me.x, self.me.y], self.destination);
+                                self.destinationQueue.pop();
+                            }
+                            if(i === 3)
+                            {
+                                self.destination[0] = newX;
+                                self.destination[1] = newY;
+                                return null;
+                            }
+                        }
+                        */
     }
     self.log('NEW DESTIONATION :::::: ' + self.destination);
   }
@@ -541,17 +616,39 @@ function firstSpot(self) {
   if (!horizontal) {
     if (self.enemyCastleLoc[1] > self.me.y) {
       self.log('*****************X********');
-      firstSpots = [self.me.x, self.me.y - 3];
+      // firstSpots = [self.me.x, self.me.y - 3];
+      firstSpots = [
+        self.friendlyCastleLoc[0][0],
+        self.friendlyCastleLoc[0][1] - 3,
+      ];
       while (!inBounds) {
-        if (self.map[firstSpots[1]][firstSpots[0]] === true) {
+        let resourceCheck = true;
+        if (
+          self.karbonite_map[firstSpots[1]][firstSpots[0]] === true ||
+          self.fuel_map[firstSpots[1]][firstSpots[0]] === true
+        ) {
+          resourceCheck = false;
+        }
+        if (
+          self.map[firstSpots[1]][firstSpots[0]] === true &&
+          resourceCheck === true
+        ) {
           break;
         }
         firstSpots[0] = firstSpots[0] - 1;
       }
     } else {
-      firstSpots = [self.me.x, self.me.y + 3];
+      // firstSpots = [self.me.x, self.me.y + 3];
+      firstSpots = [
+        self.friendlyCastleLoc[0][0],
+        self.friendlyCastleLoc[0][1] + 3,
+      ];
       self.log('*****************1********');
       while (!inBounds) {
+        if (
+          self.karbonite_map[firstSpots[1]][firstSpots[0]] === true ||
+          self.fuel_map[firstSpots[1]][firstSpots[0]] === true
+        );
         if (self.map[firstSpots[1]][firstSpots[0]] === true) {
           break;
         }
@@ -560,28 +657,40 @@ function firstSpot(self) {
     }
   } else {
     if (self.enemyCastleLoc[0] > self.me.x) {
-      firstSpots = [self.me.x - 3, self.me.y];
+      // firstSpots = [self.me.x - 3, self.me.y];
+      firstSpots = [
+        self.friendlyCastleLoc[0][0] - 3,
+        self.friendlyCastleLoc[0][1],
+      ];
       self.log('*****************2********');
       while (!inBounds) {
+        if (
+          self.karbonite_map[firstSpots[1]][firstSpots[0]] === true ||
+          self.fuel_map[firstSpots[1]][firstSpots[0]] === true
+        );
         if (self.map[firstSpots[1]][firstSpots[0]] === true) {
           break;
         }
         firstSpots[1] = firstSpots[1] - 1;
       }
     } else {
-      firstSpots = [self.me.x + 3, self.me.y];
+      // firstSpots = [self.me.x + 3, self.me.y];
+      firstSpots = [
+        self.friendlyCastleLoc[0][0] + 3,
+        self.friendlyCastleLoc[0][1],
+      ];
       self.log('*****************3********');
       while (!inBounds) {
+        if (
+          self.karbonite_map[firstSpots[1]][firstSpots[0]] === true ||
+          self.fuel_map[firstSpots[1]][firstSpots[0]] === true
+        );
         if (self.map[firstSpots[1]][firstSpots[0]] === true) {
           break;
         }
         firstSpots[1] = firstSpots[1] - 1;
       }
     }
-  }
-  if (self.map[self.destination[1]][self.destination[0]] === false) {
-    self.log('DESTINATION IMPASSABLEaaaaaaaaaaaa');
-    return null;
   }
   self.destination = firstSpots;
   const visibleRobots = self.getVisibleRobots();
@@ -683,6 +792,7 @@ class MyRobot extends BCAbstractRobot {
     this.nextMove = undefined;
     this.friendlyCastleLoc = [];
     this.checkerBoardSpot = undefined;
+    this.visitedBots = [];
   }
   turn() {
     switch (this.me.unit) {
