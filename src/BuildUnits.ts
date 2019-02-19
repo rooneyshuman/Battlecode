@@ -13,7 +13,7 @@ export function castleBuild(self: BCAbstractRobot, unitCount: UnitCountInterface
     const buildLoc: number[] = availableLoc(self.me.x, self.me.y, visionMap, self.map);
     // Easier for individual unit type testing.
     const allowUnitAmt = {
-        pilgrim: 10,
+        pilgrim: 5,
         prophet: 0,
         crusader: 0,
         preacher: 0,
@@ -37,13 +37,11 @@ export function castleBuild(self: BCAbstractRobot, unitCount: UnitCountInterface
     }
 
     // Check if open location and enough karb for pilgrim 
-	/*
-    else if (self.karbonite >= 10 && buildLoc && (self.me.turn % 1000)){
+    else if (self.karbonite >= 10 && buildLoc && (self.me.turn % 1000) && unitCount.pilgrim < allowUnitAmt.pilgrim){
         self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
         unitCount.pilgrim += 1;
         return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
     }
-	*/
 }
 
 export function pilgrimBuild(self: any): BuildAction | Falsy {

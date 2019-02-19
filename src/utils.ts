@@ -280,6 +280,7 @@ export function simplePathFinder(passableMap: boolean[][], visionMap: number[][]
     }
   }
   // moveQueue.reverse();
+  moveQueue.pop();
   return moveQueue;
 }
 

@@ -26,9 +26,9 @@ test("Closest Coords", () => {
 
 test("Pathfinding", () => {
     const testMap = fillArray(50, true);
-    const visionMap = fillArray(50, 0);
-    visionMap[1][1] = -1;
-    visionMap[1][0] = -1;
+    const visionMap = fillArray(50, -1);
+    visionMap[1][1] = 2000;
+    visionMap[0][1] = 1000;
     const start = [0, 0];
     const end = [2, 2];
     const path = simplePathFinder(testMap, visionMap, start, end);
@@ -133,6 +133,7 @@ test("Available Location", () => {
     expect(loc).toEqual([1, -1]);
 })
 
+/*
 test("Enemy Castle", () => {
     const myCastleLoc = [0, 0]
     const enemyCastleLoc = [0, 3]
@@ -140,3 +141,4 @@ test("Enemy Castle", () => {
     const enemyCastleTest = enemyCastle(myCastleLoc, testMap)
     expect(enemyCastleTest).toEqual([0, 3])
 });
+*/
