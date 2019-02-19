@@ -1,7 +1,6 @@
-import { BCAbstractRobot, SPECS } from 'battlecode';
+import { SPECS } from 'battlecode';
 import { attackFirst, rushCastle } from "./Attack";
-import { castleBuild, pilgrimBuild } from './BuildUnits';
-import { availableLoc, checkBounds, closestMiningLocation, enemyCastle, findClosestFriendlyCastles, findResources, horizontalFlip, manhatDist, simplePathFinder, visibleEnemy, visiblePilgrims } from "./utils"
+import { availableLoc, enemyCastle, horizontalFlip, manhatDist, simplePathFinder } from "./utils"
 
 export function handleProphet(self: any): Action | Falsy {
      // const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
