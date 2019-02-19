@@ -1,7 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { availableLoc, visiblePilgrims } from "./utils";
 
-interface UnitCountInterface {
+export interface UnitCountInterface {
     pilgrim: number,
     prophet: number,
     crusader: number,
@@ -37,12 +37,13 @@ export function castleBuild(self: BCAbstractRobot, unitCount: UnitCountInterface
     }
 
     // Check if open location and enough karb for pilgrim 
-    else if (self.karbonite >= 10 && buildLoc && self.me.turn % 500){
-        // FIXME: Set to 500 for now until pilgrims are fixed.
+	/*
+    else if (self.karbonite >= 10 && buildLoc && (self.me.turn % 1000)){
         self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
         unitCount.pilgrim += 1;
         return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
     }
+	*/
 }
 
 export function pilgrimBuild(self: any): BuildAction | Falsy {

@@ -1,23 +1,42 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst, rushCastle } from "./Attack";
-import { castleBuild, pilgrimBuild } from './BuildUnits';
+import { castleBuild, pilgrimBuild, UnitCountInterface } from './BuildUnits';
+import { handleProphet } from './Prophet';
 import { availableLoc, closestMiningLocation, enemyCastle, findClosestFriendlyCastles, findResources, horizontalFlip, simplePathFinder, visibleEnemy, visiblePilgrims } from "./utils";
 
 class MyRobot extends BCAbstractRobot {
-  private resourceLocation: number[] = undefined;
-  private goMining: boolean = false;
-  private destinationQueue: number[][] = [];
-  private destination: number[] = undefined;
-  private nextMove: number[] = undefined;
-  private enemyCastleLoc: number[][] = [];
-  private enemyCastleNum: number = 0;
-  private runPathAgain: number = 0;
-  private unitCount = {
-        pilgrim: 0,
-        prophet: 0,
-        crusader: 0,
-        preacher: 0,
-  }
+	private destinationQueue: number[][];
+	private destination: number[];
+	private enemyCastleLoc: number[][];
+	private enemyCastleNum: number;
+	private runPathAgain: number;
+	private nextMove: number[];
+	private friendlyCastleLoc: number[][];
+	private checkerBoardSpot: number[];
+	private visitedBots: number[];
+
+    private resourceLocation: number[] = undefined;
+    private goMining: boolean = false;
+    private unitCount: UnitCountInterface = {
+      prophet: 0,
+      pilgrim: 0,
+      crusader: 0,
+      preacher: 0
+    }
+
+	constructor() {
+		super();
+		this.destinationQueue = [];
+		this.destination = undefined;
+		this.enemyCastleLoc = [];
+		this.enemyCastleNum = 0;
+		this.runPathAgain = 0;
+		this.nextMove = undefined;
+		this.friendlyCastleLoc = [];
+		this.checkerBoardSpot = undefined;
+		this.visitedBots = [];
+	}
+
 
   public turn(): Action | Falsy {
 
@@ -42,7 +61,7 @@ class MyRobot extends BCAbstractRobot {
 
       case SPECS.PROPHET: {
         this.log("> > PROPHET > >")
-        return this.handleProphet()
+        return handleProphet(this);
       }
 
       case SPECS.PREACHER: {
@@ -209,63 +228,6 @@ class MyRobot extends BCAbstractRobot {
       closestMiningLocation([this.me.x, this.me.y], this.fuel_map, visibleRobots);
   }
 
-  private handleProphet(): Action | Falsy {
-     // const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
-    if (this.me.turn === 1) {
-      this.log("> > PROPHET FIRST TURN > >")
-      const visibleRobots = this.getVisibleRobots();
-      const robotMap = this.getVisibleRobotMap();
-      const listLength = visibleRobots.length;
-      for (let i = 0; i < listLength; ++i) {
-        const rob = visibleRobots[i];
-        if (rob.unit === SPECS.CASTLE) {
-          const horizontal = horizontalFlip(this);
-          const enemyCastleLoc = enemyCastle([rob.x, rob.y], this.map, horizontal);
-          this.enemyCastleLoc.push(enemyCastleLoc);
-          this.destination = this.enemyCastleLoc[this.enemyCastleNum];
-          this.destinationQueue = simplePathFinder(this.map, robotMap, [this.me.x, this.me.y], this.destination);
-          this.log("CASTLE LOCATION - PROPHET" + this.enemyCastleLoc[this.enemyCastleNum][0] + ", " + this.enemyCastleLoc[this.enemyCastleNum][1]);
-        }
-      }
-    }
-
-    // this.log(`Prophet health: ${this.me.health}`);
-    const attackingCoordinates = attackFirst(this);
-
-    if (attackingCoordinates) {
-      return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
-    }
-
-    if (this.runPathAgain > 1) {
-
-      const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
-	  this.runPathAgain--;
-      return this.move(choice[0], choice[1]);
-    }
-	else if(this.runPathAgain === 1)
-	{
-      this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
-	  this.runPathAgain = 0;
-	  this.runPathAgain--;
-	}
-
-    if (this.enemyCastleLoc !== null && (this.destinationQueue !== undefined && this.destinationQueue.length !== 0)) {
-      const toMove = rushCastle(this, this.destination, this.destinationQueue);
-      if (toMove === null) {
-        this.runPathAgain = 2;
-      }
-      else {
-        return this.move(toMove[0], toMove[1]);
-      }
-    }
-
-    if (this.destinationQueue.length === 0) {
-      this.destinationQueue = simplePathFinder(this.map, this.getVisibleRobotMap(),[this.me.x, this.me.y], this.destination);
-    }
-	
-    const choicer: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
-	return this.move(choicer[0], choicer[1]);
-  }
 }
 
 // Prevent Rollup from removing the entire class for being unused

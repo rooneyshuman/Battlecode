@@ -1,0 +1,11 @@
+List of known bugs
+
+1) When a robot reaches the top of the map it will throw an undefined error.
+   - Might be due to trying to move the unit out of bounds?
+
+2) After a certain point/destination has been assigned the unit will path towards the enemy castle
+   even though its destination is put somewhere else.
+
+3) Pilgrims are freezing up.
+   - this might be due to the path finding algorithm not finishing or taking to long because there is
+      no  possible path due to units blokcking? maybe not to sure
