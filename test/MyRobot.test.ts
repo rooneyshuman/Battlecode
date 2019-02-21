@@ -137,6 +137,6 @@ test("Enemy Castle", () => {
     const myCastleLoc = [0, 0]
     const enemyCastleLoc = [0, 3]
     const testMap = fillArray(4, true);
-    const enemyCastleTest = enemyCastle(myCastleLoc, testMap, true)
+    const enemyCastleTest = enemyCastle(myCastleLoc, testMap, false)
     expect(enemyCastleTest).toEqual([0, 3])
 });
