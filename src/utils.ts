@@ -115,12 +115,20 @@ export function closestMiningLocation(loc: number[], map: boolean[][], visibleRo
 }
 
 
+export function sortByClosest(selfPt: number[], destPts: number[][]) {
+  return destPts.sort((a, b) => {
+    return manhatDist(selfPt, a) - manhatDist(selfPt, b);
+  });
+}
+
+
 export function findResources(map1: boolean[][], map2: boolean[][]) {
-  const locations = [];
+  const locations1 = [];
+  const locations2 = [];
   for (let y = 0; y < map1.length; y++) {
     for (let x = 0; x < map1.length; x++) {
       if (map1[y][x] === true) {
-        locations.push([x, y]);
+        locations1.push([x, y]);
       }
     }
   }
@@ -128,12 +136,12 @@ export function findResources(map1: boolean[][], map2: boolean[][]) {
   for (let y = 0; y < map2.length; y++) {
     for (let x = 0; x < map2.length; x++) {
       if (map2[y][x] === true) {
-        locations.push([x, y]);
+        locations2.push([x, y]);
       }
     }
   }
 
-  return locations;
+  return [locations1, locations2];
 }
 
 /**
