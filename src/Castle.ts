@@ -59,3 +59,4 @@ export function handleCastle(self : any): Action | Falsy {
     }
 	*/
 }
+
