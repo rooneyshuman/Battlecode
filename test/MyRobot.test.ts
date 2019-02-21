@@ -1,5 +1,5 @@
 import { PriorityQueue } from "../src/PriorityQueue";
-import { availableLoc, closestCoords, closestMiningLocation, enemyCastle, fillArray, simplePathFinder } from "../src/utils";
+import { availableLoc, closestCoords, closestMiningLocation, enemyCastle, fillArray, simplePathFinder, sortByClosest } from "../src/utils";
 
 test("Closest Mining Location", () => {
     const testMapSize = 50;
@@ -32,7 +32,7 @@ test("Pathfinding", () => {
     const start = [0, 0];
     const end = [2, 2];
     const path = simplePathFinder(testMap, visionMap, start, end);
-    expect(path).toHaveLength(4)
+    expect(path).toHaveLength(3)
 });
 
 test("Priority Queue", () => {
@@ -143,3 +143,9 @@ test("Enemy Castle", () => {
 });
 */
 
+test("Low dist sort", () => {
+    const coords: number[][] = [[10, 10], [5, 5], [2, 2], [1, 2]];
+    const myCoord = [0, 0]
+    const sorted = sortByClosest(myCoord, coords);
+    expect(sorted).toEqual([[1, 2], [2, 2], [5, 5], [10, 10]]);
+});
