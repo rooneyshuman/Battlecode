@@ -3,37 +3,21 @@ import { BCAbstractRobot, SPECS } from 'battlecode';
 export function constructCoordMessage(pt: number[]) {
     // Fuel cost: Math.ceil(Math.sqrt(r))
     // pt = [x, y]
-    // ex: [1, 1] = 000001000001 
-    const message: string[] = [];
-    for(let i = 0; i < 12; ++i) {
-        if(i < 6 && (pt[1] & 1 << i)) {
-            // Y coords
-            if(pt[1] & 1 << i) {
-                message.push("1");
-            }
-            else {
-                message.push("0");
-            }
-        }
-        else {
-            // X Coords
-            const offset = i - 6;
-            if(pt[0] & 1 << offset) {
-                message.push("1");
-            }
-            else {
-                message.push("0");
-            }
-        }
-    }
-    // LOL so janky, but it works, so whatever.
-    return Number(message.reverse().join(''));
+    // ex: [1, 1] = 000001000001 = 65
+    // ex: [2, 2] = 000010000010 = 130
+    const xCoord = pt[0] << 6;
+    const yCoord = pt[1];
+
+    return xCoord + yCoord;
 }
 
 export function parseMessage(message: number) {
     // 6 bits X coords, 6 bits Y coords.
     // Get x coords.
     // ex: [1, 1] = 000001000001 
+    if (message === -1) {
+        return [0, 0];
+    }
     let xCoord = 0;
     let yCoord = 0;
     for(let i = 0; i < 12; i++) {

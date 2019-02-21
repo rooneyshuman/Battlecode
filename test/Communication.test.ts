@@ -7,8 +7,8 @@ test("Parse Message", () => {
 });
 
 test("Construct Message", () => {
-    const coords = [1, 1];
-    const expectedMessage = 1000001;
+    const coords = [2, 2];
+    const expectedMessage = 130;
     const testMessage = constructCoordMessage(coords);
     expect(testMessage).toEqual(expectedMessage);
 });

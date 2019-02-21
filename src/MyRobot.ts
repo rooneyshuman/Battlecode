@@ -19,6 +19,7 @@ class MyRobot extends BCAbstractRobot {
   private resourceToMine = 0;
   private resourceLocation: number[] = undefined;
   private goMining: boolean = false;
+  private signalQueue: number[] = [];
 
 	constructor() {
 		super();

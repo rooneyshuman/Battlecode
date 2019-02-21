@@ -1,4 +1,5 @@
 import { availableLoc, closestMiningLocation, findClosestFriendlyCastles, simplePathFinder, visiblePilgrims } from "./utils";
+import { parseMessage } from "./Communication";
 
 const KARBONITE = 1
 const FUEL = 2
@@ -11,15 +12,17 @@ export function handlePilgrim(self: any): Action | Falsy {
       initializePilgrim(self);
     }
     if (self.destination === undefined) {
+      /*
       if(self.resourceLocation === undefined) {
         findDiffMining(self);
       }
-      self.log(`MY DEST IS ${self.resourceLocation}`)
+      */
+      // self.log(`MY DEST IS ${self.resourceLocation}`)
       self.destination = self.resourceLocation;
       const robotMap = self.getVisibleRobotMap();
       self.destinationQueue = simplePathFinder(self.map, robotMap, [self.me.x, self.me.y], self.destination);
       self.goMining = true;
-      self.log(` > > > CLOSEST MINING SPOT AT ${self.destination}> > >`);
+      // self.log(` > > > CLOSEST MINING SPOT AT ${self.destination}> > >`);
     }
 
     let full;
@@ -96,21 +99,15 @@ export function handlePilgrim(self: any): Action | Falsy {
 // Sets pilgrims' initial mining job
 export function initializePilgrim(self: any) {
     self.log("> > > FINDING THINGS > > >");
-    const visibleRobots = self.getVisibleRobotMap();
     // 1st pilgrim mines karbonite. 2nd pilgrim mines fuel
     // Even pilgrims mine karbonite, odd pilgrims mine fuel.
-    self.log(`I AM PILGRIM NUMBER: ${visiblePilgrims(self)}`)
-    self.originalCastleLoc = findClosestFriendlyCastles(self);
-    if (visiblePilgrims(self) % 2 === 0 ) {
-      self.resourceLocation = closestMiningLocation([self.me.x, self.me.y], self.karbonite_map, visibleRobots)
-      self.resourceToMine = KARBONITE;
-    }
-    else {
-      self.resourceLocation = closestMiningLocation([self.me.x, self.me.y], self.fuel_map, visibleRobots);
-      self.resourceToMine = FUEL;
-    }
-
-    self.log(`VISPILGS < 1: ${visiblePilgrims(self) < 1} RESRC LOC: ${self.resourceLocation}, pilnum${visiblePilgrims(self)}`);
+    // self.log(`I AM PILGRIM NUMBER: ${visiblePilgrims(self)}`)
+    const castle = findClosestFriendlyCastles(self);
+    self.originalCastleLoc = [castle.x, castle.y];
+    self.resourceLocation = parseMessage(castle.signal);
+    // self.resourceLocation = [0, 0];
+    self.log(`MESSAGE: ${castle.signal}`);
+    // self.log(`VISPILGS < 1: ${visiblePilgrims(self) < 1} RESRC LOC: ${self.resourceLocation}, pilnum${visiblePilgrims(self)}`);
 }
 
 export function findDiffMining(self: any) {

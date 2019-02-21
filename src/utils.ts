@@ -297,8 +297,7 @@ export function simplePathFinder(passableMap: boolean[][], visionMap: number[][]
  * @param { BCAbstractRobot } self
  * @returns { number [][]} coordinates of closest castle
  */
-export function findClosestFriendlyCastles(self: BCAbstractRobot): number[] {
-  const storageLocs: number[][] = [];
+export function findClosestFriendlyCastles(self: BCAbstractRobot): any {
   const visibleRobots = self.getVisibleRobots();
   const castles = visibleRobots.filter((robot) => {
     if ((robot.team === self.me.team) && (robot.unit === SPECS.CASTLE)) {
@@ -306,10 +305,7 @@ export function findClosestFriendlyCastles(self: BCAbstractRobot): number[] {
     }
   });
 
-  for (const loc of castles) {
-    storageLocs.push([loc.x, loc.y]);
-  }
-  return closestCoords([self.me.x, self.me.y], storageLocs);
+  return castles[0];
 }
 
 /**
