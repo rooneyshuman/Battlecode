@@ -1,12 +1,13 @@
 import { constructCoordMessage, parseMessage,  } from "../src/Communication";
 
 test("Parse Message", () => {
-    const message = 1000001;
+    const coords = [5, 16];
+    const message = constructCoordMessage(coords);
     const parsedLoc = parseMessage(message);
-    expect(parsedLoc).toEqual([1, 1]);
+    expect(parsedLoc).toEqual(coords);
 });
 
-test("Construct Message", () => {
+test.skip("Construct Message", () => {
     const coords = [2, 2];
     const expectedMessage = 130;
     const testMessage = constructCoordMessage(coords);

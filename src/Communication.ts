@@ -4,17 +4,16 @@ export function constructCoordMessage(pt: number[]) {
     // Fuel cost: Math.ceil(Math.sqrt(r))
     // pt = [x, y]
     // ex: [1, 1] = 000001000001 = 65
-    // ex: [2, 2] = 000010000010 = 130
+    // ex: [5, 16] = 000101 010000 = 336
     const xCoord = pt[0] << 6;
     const yCoord = pt[1];
-
     return xCoord + yCoord;
 }
 
 export function parseMessage(message: number) {
     // 6 bits X coords, 6 bits Y coords.
     // Get x coords.
-    // ex: [1, 1] = 000001000001 
+    // ex: [5, 16] = 000101 010000 = 336
     if (message === -1) {
         return [0, 0];
     }
@@ -29,11 +28,10 @@ export function parseMessage(message: number) {
             }
         }
         else {
-            const offset = i - 6;
             // Do xCoord
             // Bitwise black magic
-            if (message & (1 << offset - 1)) {
-                xCoord += 1 << offset - 1;
+            if (message & (1 << i - 1)) {
+                xCoord += 1 << i - 7; // Offset is 7 b/c, (i - 1) - 6, 6 is from binary offset of x,y
             }
         }
     }
