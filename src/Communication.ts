@@ -10,7 +10,7 @@ export function constructCoordMessage(pt: number[]) {
     const yCoord = pt[1];
     return xCoord + yCoord;
     */
-   return pt[0] | pt[1] << 8;
+   return pt[0] * 64 + pt[1];
 }
 
 export function parseMessage(message: number) {
@@ -41,7 +41,7 @@ export function parseMessage(message: number) {
     }
     return [xCoord, yCoord];
     */
-   return [message & 0xFF, (message >> 8) & 0xFF]
+   return [Math.floor(message / 64) % 64, message % 64];
 }
 
 export function constructCastleTalkMessage(pt: number[], mapSize: number) {
