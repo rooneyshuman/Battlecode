@@ -109,15 +109,11 @@ export function initializePilgrim(self: any) {
     self.resourceLocation = parseMessage(castle.signal);
     // self.resourceLocation = [0, 0];
     self.log(`MESSAGE: ${castle.signal}`);
-<<<<<<< HEAD
     self.log("RESOURCE LOCATION:::" + self.resourceLocation);
-=======
-    self.log(`LOC: ${self.resourceLocation}`);
     if (self.resourceLocation[0] !== -1 && self.resourceLocation[1] !== -1) {
       const message = constructCoordMessage(self.resourceLocation);
       self.signal(message, 1);
     }
->>>>>>> pilgrim-fix
     // self.log(`VISPILGS < 1: ${visiblePilgrims(self) < 1} RESRC LOC: ${self.resourceLocation}, pilnum${visiblePilgrims(self)}`);
 }
 
