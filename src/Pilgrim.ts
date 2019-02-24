@@ -1,5 +1,5 @@
 import { availableLoc, closestMiningLocation, findClosestFriendlyCastles, simplePathFinder, visiblePilgrims } from "./utils";
-import { parseMessage } from "./Communication";
+import { parseMessage, constructCoordMessage } from "./Communication";
 
 const KARBONITE = 1
 const FUEL = 2
@@ -10,8 +10,14 @@ export function handlePilgrim(self: any): Action | Falsy {
     const visibleRobots = self.getVisibleRobotMap();
     if (self.me.turn === 1) {
       initializePilgrim(self);
+      return;
     }
+
     if (self.destination === undefined) {
+      if (self.resourceLocation[0] === -1 && self.resourceLocation[1] === -1) {
+        readCastleSignal(self);
+        return;
+      }
       /*
       if(self.resourceLocation === undefined) {
         findDiffMining(self);
@@ -64,10 +70,6 @@ export function handlePilgrim(self: any): Action | Falsy {
       self.destination = undefined;
     }
 
-    if (self.me.turn % 2 === 0) {
-      // return pilgrimBuild(self);
-    }
-
     if(visibleRobots[self.destination[1]][self.destination[0]] > 0) {
       self.log("I AM A DUMB ROBOT")
       findDiffMining(self);
@@ -107,8 +109,25 @@ export function initializePilgrim(self: any) {
     self.resourceLocation = parseMessage(castle.signal);
     // self.resourceLocation = [0, 0];
     self.log(`MESSAGE: ${castle.signal}`);
+<<<<<<< HEAD
     self.log("RESOURCE LOCATION:::" + self.resourceLocation);
+=======
+    self.log(`LOC: ${self.resourceLocation}`);
+    if (self.resourceLocation[0] !== -1 && self.resourceLocation[1] !== -1) {
+      const message = constructCoordMessage(self.resourceLocation);
+      self.signal(message, 1);
+    }
+>>>>>>> pilgrim-fix
     // self.log(`VISPILGS < 1: ${visiblePilgrims(self) < 1} RESRC LOC: ${self.resourceLocation}, pilnum${visiblePilgrims(self)}`);
+}
+
+function readCastleSignal(self: any) {
+    const castle = findClosestFriendlyCastles(self);
+    self.resourceLocation = parseMessage(castle.signal);
+    if (self.resourceLocation[0] !== -1 && self.resourceLocation[1] !== -1) {
+      const message = constructCoordMessage(self.resourceLocation);
+      self.signal(message, 1);
+    }
 }
 
 export function findDiffMining(self: any) {

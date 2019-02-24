@@ -7,19 +7,20 @@ export function handleCastle(self : any): Action | Falsy {
   if (self.me.turn === 1) {
     initializeCastle(self);
   }
+
   if(self.signalQueue.length > 0) {
-      self.signal(self.signalQueue[0], 1);
-      self.log(`SIGNALING: ${self.signalQueue[0]}`);
+    checkSignals(self);
+    if(self.signalQueue[0] !== undefined) {
+      self.log(`Queue Length: ${self.signalQueue.length}, I am broadcasting: ${self.signalQueue[0]}`);
+      self.signal(self.signalQueue[0], 1); 
+    }
   }
 
-  // Castle build pilgrims at first 2 turns
-  if (self.me.turn < 3) {
-    if (self.signalQueue.length > 0) {
-      self.signalQueue.shift(); // Temporary
-    }
+  // Castle build pilgrims at first 2 even turns
+  if (self.me.turn < 6 && self.me.turn % 2 === 0) {
     self.signalQueue.push(orderPilgrim(self));
-    self.log(`SIGNALING: ${self.signalQueue[0]}`);
-    self.signal(self.signalQueue[0], 1); // Temporary
+    self.log(`SIGNAL: ${self.signalQueue[0]}`);
+    self.signal(self.signalQueue[0], 1); 
     const buildLoc: number[] = availableLoc(self.me.x, self.me.y, self.getVisibleRobotMap(), self.map);
     // Have each castle build pilgrims in first 2 turns
     if (buildLoc){
@@ -39,7 +40,7 @@ export function handleCastle(self : any): Action | Falsy {
     self.log(`Visible enemy robot is out of attack range`);
   }
   // Check if enough karb to build
-  if (self.karbonite >= 10) {
+  if (self.karbonite >= 10 && self.me.turn >= 6) {
     self.log(`Enough karb to build..`)
     return castleBuild(self);
   }
@@ -51,18 +52,12 @@ export function handleCastle(self : any): Action | Falsy {
 
     self.log(`Castle health: ${self.me.health}`);
     // TODO: Check for confirmation signal from pilgrim, then shift signalQueue.
-    if(self.signalQueue.length > 0) {
-      self.signal(self.signalQueue[0], 1);
-      self.log(`SIGNALING: ${self.signalQueue[0]}`);
-    }
 
      // Pilgrims have been killed off, build new ones
      const pilgrimNum = visiblePilgrims(self)
      if (pilgrimNum < 2 && buildLoc) {
-      if (self.signalQueue.length > 0) {
-        self.signalQueue.shift(); // Temporary
-      }
-      self.signalQueue.append(orderPilgrim(self));
+      self.signalQueue.push(orderPilgrim(self));
+      self.signal(self.signalQueue[0], 1); 
       self.log(`PILGRIM NUM:${pilgrimNum} Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
       return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
     }
@@ -100,16 +95,33 @@ function orderPilgrim(self: any) {
   // Compare resource lengths. Use the bigger one. If equal, choose karbonite.
   // TODO: Make sure to replenish mining locations if a pilgrim dies.
   let resourceLoc;
-  if (self.karboniteLocs.length === self.fuelLocs.length) {
+  if (self.assignResCount.fuel === self.assignResCount.karb) {
     resourceLoc = self.karboniteLocs.shift();
+    self.assignResCount.karb += 1;
   }
   else {
-    if(self.karboniteLocs.length > self.fuelLocs.length) {
+    if(self.assignResCount.karb < self.assignResCount.fuel) {
       resourceLoc = self.karboniteLocs.shift();
+      self.assignResCount.karb += 1;
     }
     else {
       resourceLoc = self.fuelLocs.shift();
+      self.assignResCount.fuel += 1;
     }
   }
   return constructCoordMessage(resourceLoc);
+}
+
+function checkSignals(self: any) {
+  // Checks surrounding robots' signals.
+  const visibleRobots = self.getVisibleRobots();
+  for(const robot of visibleRobots) {
+    if((robot.signal !== undefined || robot.signal >= 0) && robot.signal !== self.id) {
+      const index = self.signalQueue.indexOf(robot.signal);
+      if (index !== -1) {
+        self.log("Removing a message");
+        self.signalQueue.splice(index, 1);
+      }
+    }
+  }
 }

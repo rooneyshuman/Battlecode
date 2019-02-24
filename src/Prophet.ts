@@ -84,7 +84,7 @@ function checkerBoardMovement(self:any) {
 	}
 
 	const visionMap = self.getVisibleRobotMap();
-			self.log("SELF.DESTIONATION:::::" + self.destination);
+			self.log("SELF.DESTINATION:::::" + self.destination);
 		self.log("visionMap " + visionMap[self.destination[1]][self.destination[0]]);
 	if(self.me.x === self.destination[0] && self.me.y === self.destination[1])
 	{
