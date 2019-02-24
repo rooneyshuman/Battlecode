@@ -1,5 +1,5 @@
 import { availableLoc, closestMiningLocation, findClosestFriendlyCastles, simplePathFinder, visiblePilgrims } from "./utils";
-import { parseMessage } from "./Communication";
+import { parseMessage, constructCoordMessage } from "./Communication";
 
 const KARBONITE = 1
 const FUEL = 2
@@ -12,7 +12,12 @@ export function handlePilgrim(self: any): Action | Falsy {
       initializePilgrim(self);
       return;
     }
+
     if (self.destination === undefined) {
+      if (self.resourceLocation[0] === -1 && self.resourceLocation[1] === -1) {
+        readCastleSignal(self);
+        return;
+      }
       /*
       if(self.resourceLocation === undefined) {
         findDiffMining(self);
@@ -105,7 +110,20 @@ export function initializePilgrim(self: any) {
     // self.resourceLocation = [0, 0];
     self.log(`MESSAGE: ${castle.signal}`);
     self.log(`LOC: ${self.resourceLocation}`);
+    if (self.resourceLocation[0] !== -1 && self.resourceLocation[1] !== -1) {
+      const message = constructCoordMessage(self.resourceLocation);
+      self.signal(message, 1);
+    }
     // self.log(`VISPILGS < 1: ${visiblePilgrims(self) < 1} RESRC LOC: ${self.resourceLocation}, pilnum${visiblePilgrims(self)}`);
+}
+
+function readCastleSignal(self: any) {
+    const castle = findClosestFriendlyCastles(self);
+    self.resourceLocation = parseMessage(castle.signal);
+    if (self.resourceLocation[0] !== -1 && self.resourceLocation[1] !== -1) {
+      const message = constructCoordMessage(self.resourceLocation);
+      self.signal(message, 1);
+    }
 }
 
 export function findDiffMining(self: any) {

@@ -20,6 +20,7 @@ class MyRobot extends BCAbstractRobot {
   private resourceLocation: number[] = undefined;
   private goMining: boolean = false;
   private signalQueue: number[] = [];
+  private assignResCount: object;
 
 	constructor() {
 		super();
@@ -32,6 +33,10 @@ class MyRobot extends BCAbstractRobot {
 		this.friendlyCastleLoc = [];
 		this.checkerBoardSpot = undefined;
     this.visitedBots = [];
+    this.assignResCount = {
+      fuel: 0,
+      karb: 0
+    }
 	}
 
 

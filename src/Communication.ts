@@ -14,13 +14,14 @@ export function constructCoordMessage(pt: number[]) {
 }
 
 export function parseMessage(message: number) {
+    if (message === -1) {
+        // TODO: Might want to change to returning an undefined
+        return [-1, -1];
+    }
     // 6 bits X coords, 6 bits Y coords.
     // Get x coords.
     // ex: [5, 16] = 000101 010000 = 336
     /*
-    if (message === -1) {
-        return [0, 0];
-    }
     let xCoord = 0;
     let yCoord = 0;
     for(let i = 0; i < 12; i++) {
