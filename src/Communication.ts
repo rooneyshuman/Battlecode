@@ -37,3 +37,18 @@ export function parseMessage(message: number) {
     }
     return [xCoord, yCoord];
 }
+
+export function constructCastleTalkMessage(pt: number[], mapSize: number) {
+    // Black magic
+    const xyBits = 8;
+    return xyBits * Math.floor(pt[0] * xyBits / mapSize) + Math.floor(pt[1] * xyBits / mapSize);
+}
+
+export function parseCastleTalk(message: number, mapSize: number) {
+    const xyBits = 8;
+    // const x = Math.floor(0.5 + (Math.floor(message / xyBits) + 0.5) * mapSize / xyBits);
+    // const y = Math.floor(0.5 + ((message % xyBits) + 0.5) * mapSize / xyBits);
+    const x = Math.floor(0.5 + (Math.floor(message / xyBits) + 0.5) * mapSize / xyBits);
+    const y = Math.floor(0.5 + ((message % xyBits) + 0.5) * mapSize / xyBits);
+    return [x, y];
+}
