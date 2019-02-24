@@ -79,7 +79,7 @@ export function availableLoc(selfX: number, selfY: number, visionMap: number[][]
   for (const avail of adjChoices) {
     const xCoord = avail[0] + selfX;
     const yCoord = avail[1] + selfY;
-    const inBounds = checkBounds([selfX, selfY], avail, visionMap[0].length);
+    const inBounds = checkBounds([xCoord, yCoord], avail, visionMap[0].length);
     let passable;
     if (inBounds){
       passable = passableMap[yCoord][xCoord];
