@@ -42,8 +42,8 @@ export function handlePilgrim(self: any): Action | Falsy {
       if (closestCastle === undefined) {
         closestCastle = self.originalCastleLoc;
       }
-      const dx = closestCastle[0] - self.me.x;
-      const dy = closestCastle[1] - self.me.y;
+      const dx = closestCastle.x - self.me.x;
+      const dy = closestCastle.y - self.me.y;
       const dist = Math.pow(dx, 2) + Math.pow(dy, 2);
 
       // If castle is in adjacent square, give resources
@@ -54,8 +54,9 @@ export function handlePilgrim(self: any): Action | Falsy {
       
       // Not near castle, set destination queue to nav to base
       const validLoc = availableLoc(self.me.x, self.me.y, visibleRobots, self.map);
-      self.destination = [closestCastle[0] + validLoc[0], closestCastle[1] + validLoc[1]];
+      self.destination = [closestCastle.x + validLoc[0], closestCastle.y + validLoc[1]];
       self.destinationQueue = simplePathFinder(self.map, visibleRobots,[self.me.x, self.me.y], self.destination);
+      self.destinationQueue.pop()
       self.log(` > > > MY LOCATION (${self.me.x}, ${self.me.y})> > >`);
       self.log(` > > > CLOSEST CASTLE AT ${self.destination}> > >`);
     }
@@ -109,15 +110,11 @@ export function initializePilgrim(self: any) {
     self.resourceLocation = parseMessage(castle.signal);
     // self.resourceLocation = [0, 0];
     self.log(`MESSAGE: ${castle.signal}`);
-<<<<<<< HEAD
-    self.log("RESOURCE LOCATION:::" + self.resourceLocation);
-=======
     self.log(`LOC: ${self.resourceLocation}`);
     if (self.resourceLocation[0] !== -1 && self.resourceLocation[1] !== -1) {
       const message = constructCoordMessage(self.resourceLocation);
       self.signal(message, 1);
     }
->>>>>>> pilgrim-fix
     // self.log(`VISPILGS < 1: ${visiblePilgrims(self) < 1} RESRC LOC: ${self.resourceLocation}, pilnum${visiblePilgrims(self)}`);
 }
 

@@ -1,10 +1,30 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst } from "./Attack";
-import { availableLoc, visibleEnemy, visiblePilgrims, findResources, sortByClosest } from "./utils";
+import { availableLoc, findResources, manhatDist, visibleEnemy, visiblePilgrims, sortByClosest } from "./utils";
 import { constructCoordMessage } from './Communication';
 
 export function handleCastle(self : any): Action | Falsy {
   if (self.me.turn === 1) {
+    const karboniteMap = self.karbonite_map;
+    const fuelmap = self.fuel_map;
+    const resourceLocations =  findResources(karboniteMap, fuelmap);
+    const karbLocations = resourceLocations[0];
+    const fuelLocations = resourceLocations[1];
+    for(let i = 0; i < karbLocations.length; ++i)
+    {
+      if(manhatDist([self.me.x, self.me.y], karbLocations[i]) < 4)
+      {
+        self.resourceSpots++;
+      }
+    }
+    for(let i = 0; i < fuelLocations.length; ++i)
+    {
+      if(manhatDist([self.me.x, self.me.y], fuelLocations[i]) < 4)
+      {
+        self.resourceSpots++;
+      }
+    }
+
     initializeCastle(self);
   }
 
@@ -17,7 +37,8 @@ export function handleCastle(self : any): Action | Falsy {
   }
 
   // Castle build pilgrims at first 2 even turns
-  if (self.me.turn < 6 && self.me.turn % 2 === 0) {
+  // if (self.me.turn < 6 && self.me.turn % 2 === 0) {
+    if(self.me.turn < self.resourceSpots){
     self.signalQueue.push(orderPilgrim(self));
     self.log(`SIGNAL: ${self.signalQueue[0]}`);
     self.signal(self.signalQueue[0], 1); 
@@ -55,7 +76,7 @@ export function handleCastle(self : any): Action | Falsy {
 
      // Pilgrims have been killed off, build new ones
      const pilgrimNum = visiblePilgrims(self)
-     if (pilgrimNum < 2 && buildLoc) {
+     if (pilgrimNum < self.resourceSpots && buildLoc) {
       self.signalQueue.push(orderPilgrim(self));
       self.signal(self.signalQueue[0], 1); 
       self.log(`PILGRIM NUM:${pilgrimNum} Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);

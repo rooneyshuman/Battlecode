@@ -21,6 +21,7 @@ class MyRobot extends BCAbstractRobot {
   private goMining: boolean = false;
   private signalQueue: number[] = [];
   private assignResCount: object;
+  private resourceSpots: number;
 
 	constructor() {
 		super();
@@ -37,6 +38,7 @@ class MyRobot extends BCAbstractRobot {
       fuel: 0,
       karb: 0
     }
+    this.resourceSpots = 0;
 	}
 
 
