@@ -10,6 +10,7 @@ export function handlePilgrim(self: any): Action | Falsy {
     const visibleRobots = self.getVisibleRobotMap();
     if (self.me.turn === 1) {
       initializePilgrim(self);
+      return;
     }
     if (self.destination === undefined) {
       /*
@@ -64,10 +65,6 @@ export function handlePilgrim(self: any): Action | Falsy {
       self.destination = undefined;
     }
 
-    if (self.me.turn % 2 === 0) {
-      // return pilgrimBuild(self);
-    }
-
     if(visibleRobots[self.destination[1]][self.destination[0]] > 0) {
       self.log("I AM A DUMB ROBOT")
       findDiffMining(self);
@@ -107,6 +104,7 @@ export function initializePilgrim(self: any) {
     self.resourceLocation = parseMessage(castle.signal);
     // self.resourceLocation = [0, 0];
     self.log(`MESSAGE: ${castle.signal}`);
+    self.log(`LOC: ${self.resourceLocation}`);
     // self.log(`VISPILGS < 1: ${visiblePilgrims(self) < 1} RESRC LOC: ${self.resourceLocation}, pilnum${visiblePilgrims(self)}`);
 }
 

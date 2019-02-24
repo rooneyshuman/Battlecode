@@ -5,15 +5,19 @@ export function constructCoordMessage(pt: number[]) {
     // pt = [x, y]
     // ex: [1, 1] = 000001000001 = 65
     // ex: [5, 16] = 000101 010000 = 336
+    /*
     const xCoord = pt[0] << 6;
     const yCoord = pt[1];
     return xCoord + yCoord;
+    */
+   return pt[0] | pt[1] << 8;
 }
 
 export function parseMessage(message: number) {
     // 6 bits X coords, 6 bits Y coords.
     // Get x coords.
     // ex: [5, 16] = 000101 010000 = 336
+    /*
     if (message === -1) {
         return [0, 0];
     }
@@ -36,6 +40,8 @@ export function parseMessage(message: number) {
         }
     }
     return [xCoord, yCoord];
+    */
+   return [message & 0xFF, (message >> 8) & 0xFF]
 }
 
 export function constructCastleTalkMessage(pt: number[], mapSize: number) {

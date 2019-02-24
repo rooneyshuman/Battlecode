@@ -8,17 +8,14 @@ export function handleCastle(self : any): Action | Falsy {
     initializeCastle(self);
   }
   if(self.signalQueue.length > 0) {
-      self.signal(self.signalQueue[0], 1);
-      self.log(`SIGNALING: ${self.signalQueue[0]}`);
+      // self.signal(self.signalQueue[0], 1);
+      self.log(`My Signal: ${self.signalQueue[0]}`);
   }
 
   // Castle build pilgrims at first 2 turns
   if (self.me.turn < 3) {
-    if (self.signalQueue.length > 0) {
-      self.signalQueue.shift(); // Temporary
-    }
     self.signalQueue.push(orderPilgrim(self));
-    self.log(`SIGNALING: ${self.signalQueue[0]}`);
+    self.log(`SIGNAL: ${self.signalQueue[0]}`);
     self.signal(self.signalQueue[0], 1); // Temporary
     const buildLoc: number[] = availableLoc(self.me.x, self.me.y, self.getVisibleRobotMap(), self.map);
     // Have each castle build pilgrims in first 2 turns
