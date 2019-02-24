@@ -160,38 +160,6 @@ function checkerBoardMovement(self:any) {
 		if(i === 4)
 		{
 			return null;
-/*			for(i = 0; i < 4; ++i)
-			{
-				const newX = firstX + formation[i][0];
-				const newY = firstY + formation[i][1];
-				if(newX < 0 || newY < 0 )
-				{continue;}
-
-				let dist = manhatDist(self.friendlyCastleLoc[0], [newX, newY]);
-				let distCheck = true;
-				if(dist > 2)
-				{distCheck = true;}
-
-				let resourceCheck = true;
-				if(self.karbonite_map[newY][newX] === true || self.fuel_map[newY][newX] === true)
-				{resourceCheck = false;}
-
-
-				if(self.map[newY][newX] === true && resourceCheck === true && distCheck === true){
-					self.destination[0] = newX;
-					self.destination[1] = newY;
-					i = 5;
-					self.destinationQueue = simplePathFinder(self.map, self.getVisibleRobotMap(),[self.me.x, self.me.y], self.destination);
-					self.destinationQueue.pop();
-				}
-				if(i === 3)
-				{
-					self.destination[0] = newX;
-					self.destination[1] = newY;
-					return null;
-				}
-			}
-			*/
 		}
 		self.log("NEW DESTIONATION :::::: " + self.destination);
 	}
@@ -291,6 +259,7 @@ function firstSpot(self:any) {
 }
 
  function goTo(self:any) {
+	 self.log("RUN PATH AGAIN ====" + self.runPathAgain);
 	if(self.runPathAgain === 1)
 	{
 	  if(availableLoc(self.me.x, self.me.y, self.getVisibleRobotMap(), self.map) === null)

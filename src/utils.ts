@@ -80,6 +80,8 @@ export function availableLoc(selfX: number, selfY: number, visionMap: number[][]
     const xCoord = avail[0] + selfX;
     const yCoord = avail[1] + selfY;
     const inBounds = checkBounds([xCoord, yCoord], avail, visionMap[0].length);
+    if(inBounds === false)
+    {return null;}
     let passable;
     if (inBounds){
       passable = passableMap[yCoord][xCoord];

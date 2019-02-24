@@ -38,7 +38,7 @@ export function handleCastle(self : any): Action | Falsy {
 
   // Castle build pilgrims at first 2 even turns
   // if (self.me.turn < 6 && self.me.turn % 2 === 0) {
-    if(self.me.turn < self.resourceSpots){
+    if(self.me.turn - 1 < self.resourceSpots){
     self.signalQueue.push(orderPilgrim(self));
     self.log(`SIGNAL: ${self.signalQueue[0]}`);
     self.signal(self.signalQueue[0], 1); 
@@ -76,7 +76,7 @@ export function handleCastle(self : any): Action | Falsy {
 
      // Pilgrims have been killed off, build new ones
      const pilgrimNum = visiblePilgrims(self)
-     if (pilgrimNum < self.resourceSpots && buildLoc) {
+     if (pilgrimNum < 2 && buildLoc) {
       self.signalQueue.push(orderPilgrim(self));
       self.signal(self.signalQueue[0], 1); 
       self.log(`PILGRIM NUM:${pilgrimNum} Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);

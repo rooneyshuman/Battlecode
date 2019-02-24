@@ -22,6 +22,7 @@ class MyRobot extends BCAbstractRobot {
   private signalQueue: number[] = [];
   private assignResCount: object;
   private resourceSpots: number;
+  private resourceLocations:number [][];
 
 	constructor() {
 		super();

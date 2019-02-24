@@ -10,20 +10,18 @@ export function handlePilgrim(self: any): Action | Falsy {
     const visibleRobots = self.getVisibleRobotMap();
     if (self.me.turn === 1) {
       initializePilgrim(self);
-      return;
     }
 
     if (self.destination === undefined) {
       if (self.resourceLocation[0] === -1 && self.resourceLocation[1] === -1) {
         readCastleSignal(self);
-        return;
       }
       /*
       if(self.resourceLocation === undefined) {
         findDiffMining(self);
       }
       */
-      // self.log(`MY DEST IS ${self.resourceLocation}`)
+      self.log(`MY DEST IS ${self.resourceLocation}`)
       self.destination = self.resourceLocation;
       const robotMap = self.getVisibleRobotMap();
       self.destinationQueue = simplePathFinder(self.map, robotMap, [self.me.x, self.me.y], self.destination);
@@ -38,25 +36,39 @@ export function handlePilgrim(self: any): Action | Falsy {
       // TODO: Make pilgrim walk back to castle if inventory is full.
       self.log("---FULL INVENTORY, RETURNING TO BASE---");
       self.goMining = false;
+      const castleToGo = self.originalCastleLoc;
+      /*
       let closestCastle = findClosestFriendlyCastles(self);
       if (closestCastle === undefined) {
-        closestCastle = self.originalCastleLoc;
+        // closestCastle = self.originalCastleLoc;
+        self.log("CLOSEST CASTLE ++++++" + self.originalCastleLoc);
+        castleToGo = self.originalCastleLoc;
       }
-      const dx = closestCastle.x - self.me.x;
-      const dy = closestCastle.y - self.me.y;
+      else{
+        castleToGo = [closestCastle.x, closestCastle.y];
+      }
+      */
+
+      // const dx = closestCastle.x - self.me.x;
+      // const dy = closestCastle.y - self.me.y;
+      const dx = castleToGo[0] - self.me.x;
+      const dy = castleToGo[1] - self.me.y;
+
       const dist = Math.pow(dx, 2) + Math.pow(dy, 2);
 
       // If castle is in adjacent square, give resources
       if (dist <= 2) {
         self.log(`GIVING RESOURCES TO CASTLE [${dx},${dy}] AWAY`);
+        self.destination = undefined;
         return self.give(dx, dy, self.me.karbonite, self.me.fuel);
       }
       
       // Not near castle, set destination queue to nav to base
       const validLoc = availableLoc(self.me.x, self.me.y, visibleRobots, self.map);
-      self.destination = [closestCastle.x + validLoc[0], closestCastle.y + validLoc[1]];
+      // self.destination = [closestCastle.x + validLoc[0], closestCastle.y + validLoc[1]];
+      self.destination = [castleToGo[0] + validLoc[0], castleToGo[1] + validLoc[1]];
+      self.log("DESTINATION TO RETURN TO CASTLE:::" + self.destination);
       self.destinationQueue = simplePathFinder(self.map, visibleRobots,[self.me.x, self.me.y], self.destination);
-      self.destinationQueue.pop()
       self.log(` > > > MY LOCATION (${self.me.x}, ${self.me.y})> > >`);
       self.log(` > > > CLOSEST CASTLE AT ${self.destination}> > >`);
     }
@@ -71,9 +83,9 @@ export function handlePilgrim(self: any): Action | Falsy {
       self.destination = undefined;
     }
 
-    if(visibleRobots[self.destination[1]][self.destination[0]] > 0) {
+    if(visibleRobots[self.destination[1]][self.destination[0]] > 0 && !full) {
       self.log("I AM A DUMB ROBOT")
-      findDiffMining(self);
+      // findDiffMining(self);
       // TODO: Make path finder faster
       // TODO: Keep track of occupied mining locations.
       // self.destinationQueue = simplePathFinder(self.map, visibleRobots,[self.me.x, self.me.y], self.destination);
@@ -83,11 +95,24 @@ export function handlePilgrim(self: any): Action | Falsy {
     if (self.destinationQueue.length !== 0) {
       // If the destination queue has coordinates and my current location is the 
       // same as my next move's location, then pop next destination and set nextMove to it.
-      self.nextMove = self.destinationQueue.pop();
-
+      if(self.runPathAgain === 1)
+      {
+        self.log("DO NOTHING");
+        self.runPathAgain = 0;
+        self.log("NEXT MOVE =======" + self.nextMove);
+      }
+      else{
+        self.nextMove = self.destinationQueue.pop();
+        self.log("NEXT MOVE =======" + self.nextMove);
+      }
       if(visibleRobots[self.nextMove[1]][self.nextMove[0]] > 0) {
         self.log("THERE'S A DUMB ROBOT IN THE WAY");
+        self.runPathAgain = 1;
+        return null;
         self.destinationQueue = simplePathFinder(self.map, visibleRobots,[self.me.x, self.me.y], self.destination);
+        self.destinationQueue.pop();
+        self.nextMove = self.destinationQueue.pop();
+        self.log("ROBOTO IN WAY NEXT MOVE IS NOW::::" + self.nextMove);
         self.log(`Destination: ${self.destination}, QUEUE: ${self.destinationQueue.reverse()}`)
       }
 
