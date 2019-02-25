@@ -5,6 +5,7 @@
     "object-literal-sort-keys": false,
     "interface-name": [true, "never-prefix"],
     "no-bitwise": false,
-    "prefer-for-of": false
+    "prefer-for-of": false,
+    "ordered-imports": false
   }
 }

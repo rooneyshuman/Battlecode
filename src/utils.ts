@@ -79,7 +79,9 @@ export function availableLoc(selfX: number, selfY: number, visionMap: number[][]
   for (const avail of adjChoices) {
     const xCoord = avail[0] + selfX;
     const yCoord = avail[1] + selfY;
-    const inBounds = checkBounds([selfX, selfY], avail, visionMap[0].length);
+    const inBounds = checkBounds([xCoord, yCoord], avail, visionMap[0].length);
+    if(inBounds === false)
+    {return null;}
     let passable;
     if (inBounds){
       passable = passableMap[yCoord][xCoord];
@@ -115,12 +117,20 @@ export function closestMiningLocation(loc: number[], map: boolean[][], visibleRo
 }
 
 
+export function sortByClosest(selfPt: number[], destPts: number[][]) {
+  return destPts.sort((a, b) => {
+    return manhatDist(selfPt, a) - manhatDist(selfPt, b);
+  });
+}
+
+
 export function findResources(map1: boolean[][], map2: boolean[][]) {
-  const locations = [];
+  const locations1 = [];
+  const locations2 = [];
   for (let y = 0; y < map1.length; y++) {
     for (let x = 0; x < map1.length; x++) {
       if (map1[y][x] === true) {
-        locations.push([x, y]);
+        locations1.push([x, y]);
       }
     }
   }
@@ -128,12 +138,12 @@ export function findResources(map1: boolean[][], map2: boolean[][]) {
   for (let y = 0; y < map2.length; y++) {
     for (let x = 0; x < map2.length; x++) {
       if (map2[y][x] === true) {
-        locations.push([x, y]);
+        locations2.push([x, y]);
       }
     }
   }
 
-  return locations;
+  return [locations1, locations2];
 }
 
 /**
@@ -280,6 +290,7 @@ export function simplePathFinder(passableMap: boolean[][], visionMap: number[][]
     }
   }
   // moveQueue.reverse();
+  moveQueue.pop();
   return moveQueue;
 }
 
@@ -288,8 +299,7 @@ export function simplePathFinder(passableMap: boolean[][], visionMap: number[][]
  * @param { BCAbstractRobot } self
  * @returns { number [][]} coordinates of closest castle
  */
-export function findClosestFriendlyCastles(self: BCAbstractRobot): number[] {
-  const storageLocs: number[][] = [];
+export function findClosestFriendlyCastles(self: BCAbstractRobot): any {
   const visibleRobots = self.getVisibleRobots();
   const castles = visibleRobots.filter((robot) => {
     if ((robot.team === self.me.team) && (robot.unit === SPECS.CASTLE)) {
@@ -297,10 +307,7 @@ export function findClosestFriendlyCastles(self: BCAbstractRobot): number[] {
     }
   });
 
-  for (const loc of castles) {
-    storageLocs.push([loc.x, loc.y]);
-  }
-  return closestCoords([self.me.x, self.me.y], storageLocs);
+  return castles[0];
 }
 
 /**

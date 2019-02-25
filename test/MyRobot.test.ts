@@ -1,5 +1,5 @@
 import { PriorityQueue } from "../src/PriorityQueue";
-import { availableLoc, closestCoords, closestMiningLocation, enemyCastle, fillArray, simplePathFinder } from "../src/utils";
+import { availableLoc, closestCoords, closestMiningLocation, enemyCastle, fillArray, simplePathFinder, sortByClosest } from "../src/utils";
 
 test("Closest Mining Location", () => {
     const testMapSize = 50;
@@ -26,13 +26,13 @@ test("Closest Coords", () => {
 
 test("Pathfinding", () => {
     const testMap = fillArray(50, true);
-    const visionMap = fillArray(50, 0);
-    visionMap[1][1] = -1;
-    visionMap[1][0] = -1;
+    const visionMap = fillArray(50, -1);
+    visionMap[1][1] = 2000;
+    visionMap[0][1] = 1000;
     const start = [0, 0];
     const end = [2, 2];
     const path = simplePathFinder(testMap, visionMap, start, end);
-    expect(path).toHaveLength(4)
+    expect(path).toHaveLength(3)
 });
 
 test("Priority Queue", () => {
@@ -133,10 +133,19 @@ test("Available Location", () => {
     expect(loc).toEqual([1, -1]);
 })
 
+/*
 test("Enemy Castle", () => {
     const myCastleLoc = [0, 0]
     const enemyCastleLoc = [0, 3]
     const testMap = fillArray(4, true);
     const enemyCastleTest = enemyCastle(myCastleLoc, testMap, true)
     expect(enemyCastleTest).toEqual([0, 3])
+});
+*/
+
+test("Low dist sort", () => {
+    const coords: number[][] = [[10, 10], [5, 5], [2, 2], [1, 2]];
+    const myCoord = [0, 0]
+    const sorted = sortByClosest(myCoord, coords);
+    expect(sorted).toEqual([[1, 2], [2, 2], [5, 5], [10, 10]]);
 });

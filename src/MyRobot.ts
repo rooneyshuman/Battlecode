@@ -14,14 +14,16 @@ class MyRobot extends BCAbstractRobot {
 	private nextMove: number[];
 	private friendlyCastleLoc: number[][];
 	private checkerBoardSpot: number[];
-	private visitedBots: number[];
+  private visitedBots: number[];
+  private originalCastleLoc: number[] = undefined;
+  private resourceToMine = 0;
+  private resourceLocation: number[] = undefined;
+  private goMining: boolean = false;
+  private signalQueue: number[] = [];
+  private assignResCount: object;
+  private resourceSpots: number;
+  private resourceLocations:number [][];
 
-    private resourceLocation: number[] = undefined;
-    private goMining: boolean = false;
-    private unitCount = {
-      prophet: 0,
-      pilgrim: 0
-    }
 	constructor() {
 		super();
 		this.destinationQueue = [];
@@ -32,7 +34,12 @@ class MyRobot extends BCAbstractRobot {
 		this.nextMove = undefined;
 		this.friendlyCastleLoc = [];
 		this.checkerBoardSpot = undefined;
-		this.visitedBots = [];
+    this.visitedBots = [];
+    this.assignResCount = {
+      fuel: 0,
+      karb: 0
+    }
+    this.resourceSpots = 0;
 	}
 
 
