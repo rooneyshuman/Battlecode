@@ -1,6 +1,7 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst, rushCastle } from "./Attack";
 import { handleCastle} from './Castle';
+import { handleCrusader } from './Crusader';
 import { handlePilgrim } from './Pilgrim';
 import { handleProphet } from './Prophet';
 import { availableLoc, closestMiningLocation, enemyCastle, findClosestFriendlyCastles, findResources, horizontalFlip, simplePathFinder, visibleEnemy, visiblePilgrims } from "./utils";
@@ -10,7 +11,8 @@ class MyRobot extends BCAbstractRobot {
 	private destination: number[];
 	private enemyCastleLoc: number[][];
 	private enemyCastleNum: number;
-	private runPathAgain: number;
+  private runPathAgain: number;
+  private rush : boolean;
 	private nextMove: number[];
 	private friendlyCastleLoc: number[][];
 	private checkerBoardSpot: number[];
@@ -23,6 +25,7 @@ class MyRobot extends BCAbstractRobot {
   private assignResCount: object;
   private resourceSpots: number;
   private resourceLocations:number [][];
+  private crusaderCount: number = 0;
 
 	constructor() {
 		super();
@@ -52,16 +55,18 @@ class MyRobot extends BCAbstractRobot {
       }
 
       case SPECS.CRUSADER: {
-        const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
-        // this.log(`Crusader health: ${this.me.health}`);
+        this.log(" > > CRUSADER > >");
+        return handleCrusader(this);
+        // const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
+        // // this.log(`Crusader health: ${this.me.health}`);
 
-        // move torwards enemy castle
-        const attackingCoordinates = attackFirst(this);
+        // // move torwards enemy castle
+        // const attackingCoordinates = attackFirst(this);
 
-        if (attackingCoordinates) {
-          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
-        }
-        return this.move(choice[0], choice[1]);
+        // if (attackingCoordinates) {
+        //   return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
+        // }
+        // return this.move(choice[0], choice[1]);
       }
 
       case SPECS.PROPHET: {

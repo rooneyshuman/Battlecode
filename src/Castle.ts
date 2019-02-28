@@ -3,24 +3,20 @@ import { attackFirst } from "./Attack";
 import { availableLoc, findResources, manhatDist, visibleEnemy, visiblePilgrims, sortByClosest } from "./utils";
 import { constructCoordMessage } from './Communication';
 
-export function handleCastle(self : any): Action | Falsy {
+export function handleCastle(self: any): Action | Falsy {
   if (self.me.turn === 1) {
     const karboniteMap = self.karbonite_map;
     const fuelmap = self.fuel_map;
-    const resourceLocations =  findResources(karboniteMap, fuelmap);
+    const resourceLocations = findResources(karboniteMap, fuelmap);
     const karbLocations = resourceLocations[0];
     const fuelLocations = resourceLocations[1];
-    for(let i = 0; i < karbLocations.length; ++i)
-    {
-      if(manhatDist([self.me.x, self.me.y], karbLocations[i]) < 4)
-      {
+    for (let i = 0; i < karbLocations.length; ++i) {
+      if (manhatDist([self.me.x, self.me.y], karbLocations[i]) < 4) {
         self.resourceSpots++;
       }
     }
-    for(let i = 0; i < fuelLocations.length; ++i)
-    {
-      if(manhatDist([self.me.x, self.me.y], fuelLocations[i]) < 4)
-      {
+    for (let i = 0; i < fuelLocations.length; ++i) {
+      if (manhatDist([self.me.x, self.me.y], fuelLocations[i]) < 4) {
         self.resourceSpots++;
       }
     }
@@ -28,30 +24,30 @@ export function handleCastle(self : any): Action | Falsy {
     initializeCastle(self);
   }
 
-  if(self.signalQueue.length > 0) {
+  if (self.signalQueue.length > 0) {
     checkSignals(self);
-    if(self.signalQueue[0] !== undefined) {
+    if (self.signalQueue[0] !== undefined) {
       self.log(`Queue Length: ${self.signalQueue.length}, I am broadcasting: ${self.signalQueue[0]}`);
-      self.signal(self.signalQueue[0], 1); 
+      self.signal(self.signalQueue[0], 1);
     }
   }
 
   // Castle build pilgrims at first 2 even turns
   // if (self.me.turn < 6 && self.me.turn % 2 === 0) {
-    if(self.me.turn - 1 < self.resourceSpots){
+  if (self.me.turn - 1 < self.resourceSpots) {
     self.signalQueue.push(orderPilgrim(self));
     self.log(`SIGNAL: ${self.signalQueue[0]}`);
-    self.signal(self.signalQueue[0], 1); 
+    self.signal(self.signalQueue[0], 1);
     const buildLoc: number[] = availableLoc(self.me.x, self.me.y, self.getVisibleRobotMap(), self.map);
     // Have each castle build pilgrims in first 2 turns
-    if (buildLoc){
+    if (buildLoc) {
       self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
       return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
     }
   }
 
   // Check for enemies first
-  if (visibleEnemy(self.getVisibleRobots(), self.me.team)){
+  if (visibleEnemy(self.getVisibleRobots(), self.me.team)) {
     const attackCoords = attackFirst(self);
     if (attackCoords) {
       self.log(`Visible enemy robot in attack range at (${attackCoords[0]}, ${attackCoords[0]})`);
@@ -67,30 +63,36 @@ export function handleCastle(self : any): Action | Falsy {
   }
 }
 
-  export function castleBuild(self: any): BuildAction | Falsy {
-    const visionMap = self.getVisibleRobotMap();
-    const buildLoc: number[] = availableLoc(self.me.x, self.me.y, visionMap, self.map);
+export function castleBuild(self: any): BuildAction | Falsy {
+  const visionMap = self.getVisibleRobotMap();
+  const buildLoc: number[] = availableLoc(self.me.x, self.me.y, visionMap, self.map);
 
-    self.log(`Castle health: ${self.me.health}`);
-    // TODO: Check for confirmation signal from pilgrim, then shift signalQueue.
+  self.log(`Castle health: ${self.me.health}`);
+  // TODO: Check for confirmation signal from pilgrim, then shift signalQueue.
 
-     // Pilgrims have been killed off, build new ones
-     const pilgrimNum = visiblePilgrims(self)
-     if (pilgrimNum < 2 && buildLoc) {
-      self.signalQueue.push(orderPilgrim(self));
-      self.signal(self.signalQueue[0], 1); 
-      self.log(`PILGRIM NUM:${pilgrimNum} Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
-      return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
-    }
+  // Pilgrims have been killed off, build new ones
+  const pilgrimNum = visiblePilgrims(self)
+  if (pilgrimNum < 2 && buildLoc) {
+    self.signalQueue.push(orderPilgrim(self));
+    self.signal(self.signalQueue[0], 1);
+    self.log(`PILGRIM NUM:${pilgrimNum} Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}), turn (${self.me.turn})`);
+    return self.buildUnit(SPECS.PILGRIM, buildLoc[0], buildLoc[1]);
+  }
 
-    // Check if open location and if enough karb for prophet
-    if (self.karbonite >= 25 && buildLoc) {
-        // Temporarily only build 1 prophet
-        self.log(`Building a prophet at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
-        return self.buildUnit(SPECS.PROPHET, buildLoc[0], buildLoc[1]);
-    }
+  // Check if open location and if enough karb for prophet
+  if (self.karbonite >= 25 && buildLoc && self.me.turn > 500) {
+      // Temporarily only build 1 prophet
+      self.log(`Building a prophet at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
+      return self.buildUnit(SPECS.PROPHET, buildLoc[0], buildLoc[1]);
+  }
+  else if (self.karbonite >= 15 && buildLoc) {
+      // Build crusaders
+      self.log(`Building a crusader at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn}),
+        karb (${self.me.karbonite})`);
+      return self.buildUnit(SPECS.CRUSADER, buildLoc[0], buildLoc[1]);
+  }
 
-    // Check if open location and enough karb for pilgrim 
+  // Check if open location and enough karb for pilgrim 
 	/*
     else if (self.karbonite >= 10 && buildLoc && (self.me.turn % 1000)){
         self.log(`Building a pilgrim at (${buildLoc[0]}, ${buildLoc[1]}) turn (${self.me.turn})`);
@@ -121,7 +123,7 @@ function orderPilgrim(self: any) {
     self.assignResCount.karb += 1;
   }
   else {
-    if(self.assignResCount.karb < self.assignResCount.fuel) {
+    if (self.assignResCount.karb < self.assignResCount.fuel) {
       resourceLoc = self.karboniteLocs.shift();
       self.assignResCount.karb += 1;
     }
@@ -136,8 +138,8 @@ function orderPilgrim(self: any) {
 function checkSignals(self: any) {
   // Checks surrounding robots' signals.
   const visibleRobots = self.getVisibleRobots();
-  for(const robot of visibleRobots) {
-    if((robot.signal !== undefined || robot.signal >= 0) && robot.signal !== self.id) {
+  for (const robot of visibleRobots) {
+    if ((robot.signal !== undefined || robot.signal >= 0) && robot.signal !== self.id) {
       const index = self.signalQueue.indexOf(robot.signal);
       if (index !== -1) {
         self.log("Removing a message");

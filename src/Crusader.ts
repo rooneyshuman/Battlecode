@@ -1,11 +1,11 @@
 import { SPECS } from 'battlecode';
 import { attackFirst, rushCastle } from "./Attack";
-import { availableLoc, enemyCastle, horizontalFlip, manhatDist, simplePathFinder } from "./utils"
+import { availableLoc, enemyCastle, horizontalFlip, manhatDist, simplePathFinder, visibleCrusaders } from "./utils"
 
-export function handleProphet(self: any): Action | Falsy {
+export function handleCrusader(self: any): Action | Falsy {
      // const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
     if (self.me.turn === 1) {
-      self.log("> > PROPHET FIRST TURN > >")
+      self.log("> > CRUSADER FIRST TURN > >")
       const visibleRobots = self.getVisibleRobots();
       const robotMap = self.getVisibleRobotMap();
       const listLength = visibleRobots.length;
@@ -18,24 +18,29 @@ export function handleProphet(self: any): Action | Falsy {
           self.enemyCastleLoc.push(enemyCastleLoc);
           self.destination = self.enemyCastleLoc[self.enemyCastleNum];
           self.destinationQueue = simplePathFinder(self.map, robotMap, [self.me.x, self.me.y], self.destination);
-          self.log("CASTLE LOCATION - PROPHET" + self.enemyCastleLoc[self.enemyCastleNum][0] + ", " + self.enemyCastleLoc[self.enemyCastleNum][1]);
+          self.log("CASTLE LOCATION - CRUSADER" + self.enemyCastleLoc[self.enemyCastleNum][0] + ", " + self.enemyCastleLoc[self.enemyCastleNum][1]);
         }
       }
     }
 
-    // this.log(`Prophet health: ${this.me.health}`);
     const attackingCoordinates = attackFirst(self);
 
     if (attackingCoordinates) {
       return self.attack(attackingCoordinates[0], attackingCoordinates[1]);
-		}
-	
-	if (self.me.turn % 12 === 0){
-		return rushMovement(self);
-	}
-	else {
-		return checkerBoardMovement(self);
-	}
+    }
+
+    // Collect crusaders, have them rush when there are 10
+    if(visibleCrusaders(self) >= 10) {
+        self.rush = true;
+    }
+    
+    if(self.rush) {
+        self.log("> > !!!!!!CRUSADER RUSHING!!!!! > >")
+        return rushMovement(self);
+    }
+    else {
+        return checkerBoardMovement(self);
+    }
 }
    
  function rushMovement(self:any) {
