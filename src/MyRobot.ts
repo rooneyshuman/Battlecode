@@ -12,7 +12,7 @@ class MyRobot extends BCAbstractRobot {
 	private enemyCastleLoc: number[][];
 	private enemyCastleNum: number;
   private runPathAgain: number;
-  private rush : boolean;
+  private rush : boolean = false;
 	private nextMove: number[];
 	private friendlyCastleLoc: number[][];
 	private checkerBoardSpot: number[];
