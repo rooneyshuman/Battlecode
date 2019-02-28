@@ -12,7 +12,8 @@
     "lint": "tslint -p tsconfig.json -c tslint.json -t stylish",
     "start": "npm run build && bc19run -r build -b build --chi 1000",
     "compile": "npm run build && bc19compile -d build -o build/compiled.js",
-    "upload": "npm run compile && BC_USERNAME=test BC_PASSWORD=test bc19upload -i build/compiled.js"
+    "upload": "npm run compile && BC_USERNAME=test BC_PASSWORD=test bc19upload -i build/compiled.js",
+    "go": "npm run compile && npm run start"
   },
   "devDependencies": {
     "@types/jest": "^24.0.0",

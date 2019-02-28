@@ -28,9 +28,14 @@ export function handleProphet(self: any): Action | Falsy {
 
     if (attackingCoordinates) {
       return self.attack(attackingCoordinates[0], attackingCoordinates[1]);
-    }
-	return checkerBoardMovement(self);
-	// return rushMovement(self);
+		}
+	
+	if (self.me.turn % 12 === 0){
+		return rushMovement(self);
+	}
+	else {
+		return checkerBoardMovement(self);
+	}
 }
    
  function rushMovement(self:any) {

@@ -324,6 +324,20 @@ export function visiblePilgrims(self: BCAbstractRobot): number {
   return visibleRobots.filter(isPilgrim).length;
 }
 
+/**
+ * Finds the number of visible pilgrims
+ * @param { BCAbstractRobot } self
+ * @returns { number } number of pilgrims in vision radius, -1 if none
+ */
+export function visibleCrusaders(self: BCAbstractRobot): number {
+  const visibleRobots = self.getVisibleRobots();
+
+  function isCrusader(robot: any) {
+    return robot.team === self.me.team && robot.unit === SPECS.CRUSADER;
+  }
+  return visibleRobots.filter(isCrusader).length;
+}
+
 // Function will take in one of our castles and reflect its position to obtain
 // the location of an enemy castle
 export function enemyCastle(selfLoc: number[], map: boolean[][], horizontal:boolean) {

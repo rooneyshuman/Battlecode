@@ -1,19 +1,21 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 import { attackFirst, rushCastle } from "./Attack";
-import { handleCastle} from './Castle';
+import { handleCastle } from './Castle';
+import { handleCrusader } from './Crusader';
 import { handlePilgrim } from './Pilgrim';
 import { handleProphet } from './Prophet';
 import { availableLoc, closestMiningLocation, enemyCastle, findClosestFriendlyCastles, findResources, horizontalFlip, simplePathFinder, visibleEnemy, visiblePilgrims } from "./utils";
 
 class MyRobot extends BCAbstractRobot {
-	private destinationQueue: number[][];
-	private destination: number[];
-	private enemyCastleLoc: number[][];
-	private enemyCastleNum: number;
-	private runPathAgain: number;
-	private nextMove: number[];
-	private friendlyCastleLoc: number[][];
-	private checkerBoardSpot: number[];
+  private destinationQueue: number[][];
+  private destination: number[];
+  private enemyCastleLoc: number[][];
+  private enemyCastleNum: number;
+  private runPathAgain: number;
+  private rush: boolean = false;
+  private nextMove: number[];
+  private friendlyCastleLoc: number[][];
+  private checkerBoardSpot: number[];
   private visitedBots: number[];
   private originalCastleLoc: number[] = undefined;
   private resourceToMine = 0;
@@ -22,25 +24,26 @@ class MyRobot extends BCAbstractRobot {
   private signalQueue: number[] = [];
   private assignResCount: object;
   private resourceSpots: number;
-  private resourceLocations:number [][];
+  private resourceLocations: number[][];
+  private crusaderCount: number = 0;
 
-	constructor() {
-		super();
-		this.destinationQueue = [];
-		this.destination = undefined;
-		this.enemyCastleLoc = [];
-		this.enemyCastleNum = 0;
-		this.runPathAgain = 0;
-		this.nextMove = undefined;
-		this.friendlyCastleLoc = [];
-		this.checkerBoardSpot = undefined;
+  constructor() {
+    super();
+    this.destinationQueue = [];
+    this.destination = undefined;
+    this.enemyCastleLoc = [];
+    this.enemyCastleNum = 0;
+    this.runPathAgain = 0;
+    this.nextMove = undefined;
+    this.friendlyCastleLoc = [];
+    this.checkerBoardSpot = undefined;
     this.visitedBots = [];
     this.assignResCount = {
       fuel: 0,
       karb: 0
     }
     this.resourceSpots = 0;
-	}
+  }
 
 
   public turn(): Action | Falsy {
@@ -52,16 +55,8 @@ class MyRobot extends BCAbstractRobot {
       }
 
       case SPECS.CRUSADER: {
-        const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
-        // this.log(`Crusader health: ${this.me.health}`);
-
-        // move torwards enemy castle
-        const attackingCoordinates = attackFirst(this);
-
-        if (attackingCoordinates) {
-          return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
-        }
-        return this.move(choice[0], choice[1]);
+        this.log(" > > CRUSADER > >");
+        return handleCrusader(this);
       }
 
       case SPECS.PROPHET: {
