@@ -7,17 +7,31 @@ test("Parse Message", () => {
     expect(parsedLoc).toEqual(coords);
 });
 
-test.skip("Construct Message", () => {
+test("Construct Message", () => {
     const coords = [2, 2];
     const expectedMessage = 130;
     const testMessage = constructCoordMessage(coords);
     expect(testMessage).toEqual(expectedMessage);
 });
 
-test.skip("CastleTalk", () => {
+test("CastleTalk", () => {
     const coords = [6, 2];
     const mapSize = 45;
     const message = constructCastleTalkMessage(coords, mapSize);
     const decoded = parseCastleTalk(message, mapSize);
-    expect(decoded).toEqual(coords);
+    expect(decoded).toEqual([8,3]);
 });
+
+test("CastleTalkMessage", () => {
+    const coords = [6,2];
+    const mapSize = 45;
+    const message = constructCastleTalkMessage(coords, mapSize);
+    expect(message).toEqual(8);
+})
+
+test("Parse Message Fail", () => {
+    const message = -1;
+    const parsed = parseMessage(message);
+    expect(parsed).toEqual([-1,-1]);
+})
+
