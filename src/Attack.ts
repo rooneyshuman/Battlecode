@@ -70,6 +70,8 @@ export function rushCastle(self: any, dest: number[], destQ: number[][]) {
 	if (destQ.length !== 0 && ((self.me.x === nextMove[0]) && (self.me.y === nextMove[1]))) {
 		// If the destination queue has coordinates and my current location is the 
 		// same as my next move's location, then pop next destination and set nextMove to it.
+		destQ.pop();
+		destQ.pop();
 		nextMove = destQ.pop();
 		const moveX = nextMove[0] - self.me.x;
 		const moveY = nextMove[1] - self.me.y;
