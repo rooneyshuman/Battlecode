@@ -16,7 +16,7 @@ export function handleCrusader(self: any): Action | Falsy {
     }
 
     // Collect crusaders, have them rush when there are 1
-    if (visibleCrusaders(self) >= 1) {
+    if (visibleCrusaders(self) >= 3) {
         self.rush = true;
     }
 
