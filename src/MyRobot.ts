@@ -77,7 +77,7 @@ class MyRobot extends BCAbstractRobot {
       case SPECS.CASTLE: {
         // get castle coordinates
         if (this.me.turn === 1) {
-          const horizontal = horizontalFlip(this);
+          const horizontal = horizontalFlip(this.map);
           this.enemyCastleLoc.push(enemyCastle([this.me.x, this.me.y], this.map, horizontal));
           this.log("CASTLE LOCATION" + this.enemyCastleLoc[this.enemyCastleNum][0] + ", " + this.enemyCastleLoc[this.enemyCastleNum][1]);
         }

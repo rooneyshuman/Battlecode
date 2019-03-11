@@ -15,8 +15,8 @@ export function handleCrusader(self: any): Action | Falsy {
         return self.attack(attackingCoordinates[0], attackingCoordinates[1]);
     }
 
-    // Collect crusaders, have them rush when there are 10
-    if (visibleCrusaders(self) >= 3) {
+    // Collect crusaders, have them rush when there are 1
+    if (visibleCrusaders(self) >= 1) {
         self.rush = true;
     }
 
@@ -36,7 +36,7 @@ function crusaderInit(self: any) {
     for (let i = 0; i < listLength; ++i) {
         const rob = visibleRobots[i];
         if (rob.unit === SPECS.CASTLE) {
-            const horizontal = horizontalFlip(self);
+            const horizontal = horizontalFlip(self.map);
             const enemyCastleLoc = enemyCastle([rob.x, rob.y], self.map, horizontal);
             self.friendlyCastleLoc.push([rob.x, rob.y]);
             self.enemyCastleLoc.push(enemyCastleLoc);

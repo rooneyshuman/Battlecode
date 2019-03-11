@@ -85,7 +85,7 @@ test("Available Location", () => {
     ];
 
     let loc = availableLoc(1, 1, testMap, myMap);
-    expect(loc).toEqual([-1, 1]);
+    expect(loc).toEqual(null);
 
     testMap = [
         [-1, -1, -1],
@@ -94,7 +94,7 @@ test("Available Location", () => {
         [-1, -1, -1]
     ];
     loc = availableLoc(1, 1, testMap, myMap);
-    expect(loc).toEqual([1, 1]);
+    expect(loc).toEqual(null);
 
     testMap = [
         [-1, -1, -1],
@@ -130,7 +130,7 @@ test("Available Location", () => {
         [-1, -1, -1]
     ];
     loc = availableLoc(1, 1, testMap, myMap);
-    expect(loc).toEqual([1, -1]);
+    expect(loc).toEqual(null);
 })
 
 /*
