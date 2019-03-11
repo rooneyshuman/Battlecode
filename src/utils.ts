@@ -2,28 +2,28 @@ import { BCAbstractRobot, SPECS } from 'battlecode';
 import { PriorityQueue } from './PriorityQueue';
 
 const adjChoices: number[][] = [
+  [1, -1],    // SE
   [0, -1],    // S
-  [-1, -1],   // NW
+  [-1, -1],   // SW
   [-1, 0],    // W
-  [-1, 1],    // SW
+  [-1, 1],    // NW
   [0, 1],     // N
   [1, 1],     // NE
   [1, 0],     // E
-  [1, -1],    // SE
 ];
 
 /**
  * Finds an in-bounds location adjacent to our robot
- * @param { BCAbstractRobot } self
+ * @param { number } my x location, { number } my y location, {number [][]} game map
  * @returns { number [] } Array containing elements that consist of [x , y]
  */
-export function simpleValidLoc(self: BCAbstractRobot): number[] {
+export function simpleValidLoc(meX: number, meY: number, map: boolean[][]): number[] {
   let i = 0;
-  let bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
+  let bounds = checkBounds([meX, meY], adjChoices[i], map[0].length);
   while ((bounds === false) && (i < adjChoices.length)) {
     // While adjChoices[i] is out of bounds, iterate through i.
     i += 1;
-    bounds = checkBounds([self.me.x, self.me.y], adjChoices[i], self.map[0].length);
+    bounds = checkBounds([meX, meY], adjChoices[i], map[0].length);
   }
   if (i > adjChoices.length) {
     return [0, 1];
@@ -37,31 +37,30 @@ export function simpleValidLoc(self: BCAbstractRobot): number[] {
  * @param { BCAbstractRobot } self
  * @returns { number [] } Array containing elements that consist of [x , y]
  */
-export function randomValidLoc(self: BCAbstractRobot): number[] {
+export function randomValidLoc(meX: number, meY: number, map: boolean [][]): number[] {
   // TODO: Possibly check if a unit is in the desired space for movement?
 
-  const mapDim = self.map[0].length;
+  const mapDim = map[0].length;
   let rand = Math.floor(Math.random() * adjChoices.length);
   let loc = adjChoices[rand];
   let counter = 0;
 
-
   do {
-    if (self.me.y + loc[1] >= mapDim) {
+    if (meY + loc[1] >= mapDim) {
       loc[1] = -1;
     }
-    if (self.me.y + loc[1] < 0) {
+    if (meY + loc[1] < 0) {
       loc[1] = 1;
     }
-    if (self.me.x + loc[0] >= mapDim) {
+    if (meX + loc[0] >= mapDim) {
       loc[0] = -1;
     }
-    if (self.me.x + loc[0] < 0) {
+    if (meX + loc[0] < 0) {
       loc[0] = 1;
     }
     rand = (rand + 1) % adjChoices.length;
     counter++;
-  } while (!self.map[self.me.y + loc[1]][self.me.x + loc[0]] && counter < adjChoices.length);
+  } while (!map[meY + loc[1]][meX + loc[0]] && counter < adjChoices.length);
   if (counter >= adjChoices.length) {
     loc = [0, 1];
   }
@@ -80,8 +79,6 @@ export function availableLoc(selfX: number, selfY: number, visionMap: number[][]
     const xCoord = avail[0] + selfX;
     const yCoord = avail[1] + selfY;
     const inBounds = checkBounds([xCoord, yCoord], avail, visionMap[0].length);
-    if(inBounds === false)
-    {return null;}
     let passable;
     if (inBounds){
       passable = passableMap[yCoord][xCoord];
@@ -90,7 +87,6 @@ export function availableLoc(selfX: number, selfY: number, visionMap: number[][]
       return avail;
     }
   }
-
   // No available adjacent location 
   return null;
 }
@@ -227,11 +223,7 @@ export function checkBounds(start: number[], toAdd: number[], mapDim: number): b
 
 export function simplePathFinder(passableMap: boolean[][], visionMap: number[][], start: number[], dest: number[]): number[][] {
   // Simple BFS pathfinder
-  // Really bad.
   const visited: boolean[][] = fillArray(passableMap[0].length, false);
-  // const gScore: number[][] = fillArray(map[0].length, Infinity);
-  // const fScore: number[][] = fillArray(map[0].length, Infinity);
-
   const parentCoord: number[][][] = fillArray(passableMap[0].length, []);
   const moveQueue: number[][] = [];
   const queue = new PriorityQueue();
@@ -242,8 +234,6 @@ export function simplePathFinder(passableMap: boolean[][], visionMap: number[][]
     coord: start,
     priority: manhatDist(start, dest),
   });
-  // gScore[start[1]][start[0]] = 0;
-  // fScore[start[1]][start[0]] = manhatDist(start, dest);
   parentCoord[start[1]][start[0]] = start;
 
   while (queue.size() !== 0) {
@@ -346,13 +336,7 @@ export function enemyCastle(selfLoc: number[], map: boolean[][], horizontal:bool
   const mapLength = map.length;
   const xcor = selfLoc[0];
   const ycor = selfLoc[1];
-  /*
-  const coordinateVertical: number[] = [mapLength - xcor - 1, ycor];
-  const coordinateHorizontal: number[] = [xcor, mapLength - ycor - 1];
 
-  if (!map[coordinateVertical[1]][coordinateVertical[0]]) { return coordinateVertical; }
-  else { return coordinateHorizontal; }
-  */
   const coordinateVertical: number[] = [mapLength - xcor - 1, ycor];
   const coordinateHorizontal: number[] = [xcor, mapLength - ycor - 1];
 
@@ -361,11 +345,11 @@ export function enemyCastle(selfLoc: number[], map: boolean[][], horizontal:bool
 
 }
 
-export function horizontalFlip(self: any) {
-  const length: number = self.map.length;
+export function horizontalFlip(map: boolean[][]) {
+  const length: number = map.length;
   for (let x = 0; x < length; ++x) {
     for (let y = 0; y < length; ++y) {
-      if (!(self.map[y][x] === self.map[y][length - x - 1])) {
+      if (!(map[y][x] === map[y][length - x - 1])) {
         return false;
       }
     }

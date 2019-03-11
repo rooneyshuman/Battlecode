@@ -90,7 +90,7 @@ function firstSpot(self: any) {
     // Move to first initial spot. If it is already occupied check to see if one of the formation
     // spots are available and move there.
 
-    const horizontal = horizontalFlip(self);
+    const horizontal = horizontalFlip(self.map);
     let firstSpots: number[];
     const visionMap = self.getVisibleRobotMap();
     const inBounds = false;

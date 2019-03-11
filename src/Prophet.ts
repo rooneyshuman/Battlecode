@@ -12,7 +12,7 @@ export function handleProphet(self: any): Action | Falsy {
 		for (let i = 0; i < listLength; ++i) {
 			const rob = visibleRobots[i];
 			if (rob.unit === SPECS.CASTLE) {
-				const horizontal = horizontalFlip(self);
+				const horizontal = horizontalFlip(self.map);
 				const enemyCastleLoc = enemyCastle([rob.x, rob.y], self.map, horizontal);
 				self.friendlyCastleLoc.push([rob.x, rob.y]);
 				self.enemyCastleLoc.push(enemyCastleLoc);
