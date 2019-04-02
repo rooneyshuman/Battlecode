@@ -1,4 +1,442 @@
-import { SPECS, BCAbstractRobot } from 'battlecode';
+'use strict';
+
+var SPECS = {
+  COMMUNICATION_BITS: 16,
+  CASTLE_TALK_BITS: 8,
+  MAX_ROUNDS: 1000,
+  TRICKLE_FUEL: 25,
+  INITIAL_KARBONITE: 100,
+  INITIAL_FUEL: 500,
+  MINE_FUEL_COST: 1,
+  KARBONITE_YIELD: 2,
+  FUEL_YIELD: 10,
+  MAX_TRADE: 1024,
+  MAX_BOARD_SIZE: 64,
+  MAX_ID: 4096,
+  CASTLE: 0,
+  CHURCH: 1,
+  PILGRIM: 2,
+  CRUSADER: 3,
+  PROPHET: 4,
+  PREACHER: 5,
+  RED: 0,
+  BLUE: 1,
+  CHESS_INITIAL: 100,
+  CHESS_EXTRA: 20,
+  TURN_MAX_TIME: 200,
+  MAX_MEMORY: 50000000,
+  UNITS: [
+    {
+      CONSTRUCTION_KARBONITE: null,
+      CONSTRUCTION_FUEL: null,
+      KARBONITE_CAPACITY: null,
+      FUEL_CAPACITY: null,
+      SPEED: 0,
+      FUEL_PER_MOVE: null,
+      STARTING_HP: 200,
+      VISION_RADIUS: 100,
+      ATTACK_DAMAGE: 10,
+      ATTACK_RADIUS: [1, 64],
+      ATTACK_FUEL_COST: 10,
+      DAMAGE_SPREAD: 0,
+    },
+    {
+      CONSTRUCTION_KARBONITE: 50,
+      CONSTRUCTION_FUEL: 200,
+      KARBONITE_CAPACITY: null,
+      FUEL_CAPACITY: null,
+      SPEED: 0,
+      FUEL_PER_MOVE: null,
+      STARTING_HP: 100,
+      VISION_RADIUS: 100,
+      ATTACK_DAMAGE: 0,
+      ATTACK_RADIUS: 0,
+      ATTACK_FUEL_COST: 0,
+      DAMAGE_SPREAD: 0,
+    },
+    {
+      CONSTRUCTION_KARBONITE: 10,
+      CONSTRUCTION_FUEL: 50,
+      KARBONITE_CAPACITY: 20,
+      FUEL_CAPACITY: 100,
+      SPEED: 4,
+      FUEL_PER_MOVE: 1,
+      STARTING_HP: 10,
+      VISION_RADIUS: 100,
+      ATTACK_DAMAGE: null,
+      ATTACK_RADIUS: null,
+      ATTACK_FUEL_COST: null,
+      DAMAGE_SPREAD: null,
+    },
+    {
+      CONSTRUCTION_KARBONITE: 15,
+      CONSTRUCTION_FUEL: 50,
+      KARBONITE_CAPACITY: 20,
+      FUEL_CAPACITY: 100,
+      SPEED: 9,
+      FUEL_PER_MOVE: 1,
+      STARTING_HP: 40,
+      VISION_RADIUS: 49,
+      ATTACK_DAMAGE: 10,
+      ATTACK_RADIUS: [1, 16],
+      ATTACK_FUEL_COST: 10,
+      DAMAGE_SPREAD: 0,
+    },
+    {
+      CONSTRUCTION_KARBONITE: 25,
+      CONSTRUCTION_FUEL: 50,
+      KARBONITE_CAPACITY: 20,
+      FUEL_CAPACITY: 100,
+      SPEED: 4,
+      FUEL_PER_MOVE: 2,
+      STARTING_HP: 20,
+      VISION_RADIUS: 64,
+      ATTACK_DAMAGE: 10,
+      ATTACK_RADIUS: [16, 64],
+      ATTACK_FUEL_COST: 25,
+      DAMAGE_SPREAD: 0,
+    },
+    {
+      CONSTRUCTION_KARBONITE: 30,
+      CONSTRUCTION_FUEL: 50,
+      KARBONITE_CAPACITY: 20,
+      FUEL_CAPACITY: 100,
+      SPEED: 4,
+      FUEL_PER_MOVE: 3,
+      STARTING_HP: 60,
+      VISION_RADIUS: 16,
+      ATTACK_DAMAGE: 20,
+      ATTACK_RADIUS: [1, 16],
+      ATTACK_FUEL_COST: 15,
+      DAMAGE_SPREAD: 3,
+    },
+  ],
+};
+
+function insulate(content) {
+  return JSON.parse(JSON.stringify(content));
+}
+
+class BCAbstractRobot {
+  constructor() {
+    this._bc_reset_state();
+  }
+
+  // Hook called by runtime, sets state and calls turn.
+  _do_turn(game_state) {
+    this._bc_game_state = game_state;
+    this.id = game_state.id;
+    this.karbonite = game_state.karbonite;
+    this.fuel = game_state.fuel;
+    this.last_offer = game_state.last_offer;
+
+    this.me = this.getRobot(this.id);
+
+    if (this.me.turn === 1) {
+      this.map = game_state.map;
+      this.karbonite_map = game_state.karbonite_map;
+      this.fuel_map = game_state.fuel_map;
+    }
+
+    try {
+      var t = this.turn();
+    } catch (e) {
+      t = this._bc_error_action(e);
+    }
+
+    if (!t) t = this._bc_null_action();
+
+    t.signal = this._bc_signal;
+    t.signal_radius = this._bc_signal_radius;
+    t.logs = this._bc_logs;
+    t.castle_talk = this._bc_castle_talk;
+
+    this._bc_reset_state();
+
+    return t;
+  }
+
+  _bc_reset_state() {
+    // Internal robot state representation
+    this._bc_logs = [];
+    this._bc_signal = 0;
+    this._bc_signal_radius = 0;
+    this._bc_game_state = null;
+    this._bc_castle_talk = 0;
+    this.me = null;
+    this.id = null;
+    this.fuel = null;
+    this.karbonite = null;
+    this.last_offer = null;
+  }
+
+  // Action template
+  _bc_null_action() {
+    return {
+      signal: this._bc_signal,
+      signal_radius: this._bc_signal_radius,
+      logs: this._bc_logs,
+      castle_talk: this._bc_castle_talk,
+    };
+  }
+
+  _bc_error_action(e) {
+    var a = this._bc_null_action();
+
+    if (e.stack) a.error = e.stack;
+    else a.error = e.toString();
+
+    return a;
+  }
+
+  _bc_action(action, properties) {
+    var a = this._bc_null_action();
+    if (properties)
+      for (var key in properties) {
+        a[key] = properties[key];
+      }
+    a['action'] = action;
+    return a;
+  }
+
+  _bc_check_on_map(x, y) {
+    return (
+      x >= 0 &&
+      x < this._bc_game_state.shadow[0].length &&
+      y >= 0 &&
+      y < this._bc_game_state.shadow.length
+    );
+  }
+
+  log(message) {
+    this._bc_logs.push(JSON.stringify(message));
+  }
+
+  // Set signal value.
+  signal(value, radius) {
+    // Check if enough fuel to signal, and that valid value.
+
+    var fuelNeeded = Math.ceil(Math.sqrt(radius));
+    if (this.fuel < fuelNeeded) throw 'Not enough fuel to signal given radius.';
+    if (
+      !Number.isInteger(value) ||
+      value < 0 ||
+      value >= Math.pow(2, SPECS.COMMUNICATION_BITS)
+    )
+      throw 'Invalid signal, must be int within bit range.';
+    if (radius > 2 * Math.pow(SPECS.MAX_BOARD_SIZE - 1, 2))
+      throw 'Signal radius is too big.';
+
+    this._bc_signal = value;
+    this._bc_signal_radius = radius;
+
+    this.fuel -= fuelNeeded;
+  }
+
+  // Set castle talk value.
+  castleTalk(value) {
+    // Check if enough fuel to signal, and that valid value.
+
+    if (
+      !Number.isInteger(value) ||
+      value < 0 ||
+      value >= Math.pow(2, SPECS.CASTLE_TALK_BITS)
+    )
+      throw 'Invalid castle talk, must be between 0 and 2^8.';
+
+    this._bc_castle_talk = value;
+  }
+
+  proposeTrade(karbonite, fuel) {
+    if (this.me.unit !== SPECS.CASTLE) throw 'Only castles can trade.';
+    if (!Number.isInteger(karbonite) || !Number.isInteger(fuel))
+      throw 'Must propose integer valued trade.';
+    if (
+      Math.abs(karbonite) >= SPECS.MAX_TRADE ||
+      Math.abs(fuel) >= SPECS.MAX_TRADE
+    )
+      throw 'Cannot trade over ' + SPECS.MAX_TRADE + ' in a given turn.';
+
+    return this._bc_action('trade', {
+      trade_fuel: fuel,
+      trade_karbonite: karbonite,
+    });
+  }
+
+  buildUnit(unit, dx, dy) {
+    if (
+      this.me.unit !== SPECS.PILGRIM &&
+      this.me.unit !== SPECS.CASTLE &&
+      this.me.unit !== SPECS.CHURCH
+    )
+      throw 'This unit type cannot build.';
+    if (this.me.unit === SPECS.PILGRIM && unit !== SPECS.CHURCH)
+      throw 'Pilgrims can only build churches.';
+    if (this.me.unit !== SPECS.PILGRIM && unit === SPECS.CHURCH)
+      throw 'Only pilgrims can build churches.';
+
+    if (
+      !Number.isInteger(dx) ||
+      !Number.isInteger(dx) ||
+      dx < -1 ||
+      dy < -1 ||
+      dx > 1 ||
+      dy > 1
+    )
+      throw 'Can only build in adjacent squares.';
+    if (!this._bc_check_on_map(this.me.x + dx, this.me.y + dy))
+      throw "Can't build units off of map.";
+    if (this._bc_game_state.shadow[this.me.y + dy][this.me.x + dx] > 0)
+      throw 'Cannot build on occupied tile.';
+    if (!this.map[this.me.y + dy][this.me.x + dx])
+      throw 'Cannot build onto impassable terrain.';
+    if (
+      this.karbonite < SPECS.UNITS[unit].CONSTRUCTION_KARBONITE ||
+      this.fuel < SPECS.UNITS[unit].CONSTRUCTION_FUEL
+    )
+      throw 'Cannot afford to build specified unit.';
+
+    return this._bc_action('build', {
+      dx: dx,
+      dy: dy,
+      build_unit: unit,
+    });
+  }
+
+  move(dx, dy) {
+    if (this.me.unit === SPECS.CASTLE || this.me.unit === SPECS.CHURCH)
+      throw 'Churches and Castles cannot move.';
+    if (!this._bc_check_on_map(this.me.x + dx, this.me.y + dy))
+      throw "Can't move off of map.";
+    if (this._bc_game_state.shadow[this.me.y + dy][this.me.x + dx] === -1)
+      throw 'Cannot move outside of vision range.';
+    if (this._bc_game_state.shadow[this.me.y + dy][this.me.x + dx] !== 0)
+      throw 'Cannot move onto occupied tile.';
+    if (!this.map[this.me.y + dy][this.me.x + dx])
+      throw 'Cannot move onto impassable terrain.';
+
+    var r = Math.pow(dx, 2) + Math.pow(dy, 2); // Squared radius
+    if (r > SPECS.UNITS[this.me.unit]['SPEED'])
+      throw 'Slow down, cowboy.  Tried to move faster than unit can.';
+    if (this.fuel < r * SPECS.UNITS[this.me.unit]['FUEL_PER_MOVE'])
+      throw 'Not enough fuel to move at given speed.';
+
+    return this._bc_action('move', {
+      dx: dx,
+      dy: dy,
+    });
+  }
+
+  mine() {
+    if (this.me.unit !== SPECS.PILGRIM) throw 'Only Pilgrims can mine.';
+    if (this.fuel < SPECS.MINE_FUEL_COST) throw 'Not enough fuel to mine.';
+
+    if (this.karbonite_map[this.me.y][this.me.x]) {
+      if (this.me.karbonite >= SPECS.UNITS[SPECS.PILGRIM].KARBONITE_CAPACITY)
+        throw 'Cannot mine, as at karbonite capacity.';
+    } else if (this.fuel_map[this.me.y][this.me.x]) {
+      if (this.me.fuel >= SPECS.UNITS[SPECS.PILGRIM].FUEL_CAPACITY)
+        throw 'Cannot mine, as at fuel capacity.';
+    } else throw 'Cannot mine square without fuel or karbonite.';
+
+    return this._bc_action('mine');
+  }
+
+  give(dx, dy, karbonite, fuel) {
+    if (dx > 1 || dx < -1 || dy > 1 || dy < -1 || (dx === 0 && dy === 0))
+      throw 'Can only give to adjacent squares.';
+    if (!this._bc_check_on_map(this.me.x + dx, this.me.y + dy))
+      throw "Can't give off of map.";
+    if (this._bc_game_state.shadow[this.me.y + dy][this.me.x + dx] <= 0)
+      throw 'Cannot give to empty square.';
+    if (
+      karbonite < 0 ||
+      fuel < 0 ||
+      this.me.karbonite < karbonite ||
+      this.me.fuel < fuel
+    )
+      throw 'Do not have specified amount to give.';
+
+    return this._bc_action('give', {
+      dx: dx,
+      dy: dy,
+      give_karbonite: karbonite,
+      give_fuel: fuel,
+    });
+  }
+
+  attack(dx, dy) {
+    if (this.me.unit === SPECS.CHURCH) throw 'Churches cannot attack.';
+    if (this.fuel < SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST)
+      throw 'Not enough fuel to attack.';
+    if (!this._bc_check_on_map(this.me.x + dx, this.me.y + dy))
+      throw "Can't attack off of map.";
+    if (this._bc_game_state.shadow[this.me.y + dy][this.me.x + dx] === -1)
+      throw 'Cannot attack outside of vision range.';
+
+    var r = Math.pow(dx, 2) + Math.pow(dy, 2);
+    if (
+      r > SPECS.UNITS[this.me.unit]['ATTACK_RADIUS'][1] ||
+      r < SPECS.UNITS[this.me.unit]['ATTACK_RADIUS'][0]
+    )
+      throw 'Cannot attack outside of attack range.';
+
+    return this._bc_action('attack', {
+      dx: dx,
+      dy: dy,
+    });
+  }
+
+  // Get robot of a given ID
+  getRobot(id) {
+    if (id <= 0) return null;
+    for (var i = 0; i < this._bc_game_state.visible.length; i++) {
+      if (this._bc_game_state.visible[i].id === id) {
+        return insulate(this._bc_game_state.visible[i]);
+      }
+    }
+    return null;
+  }
+
+  // Check if a given robot is visible.
+  isVisible(robot) {
+    return 'unit' in robot;
+  }
+
+  // Check if a given robot is sending you radio.
+  isRadioing(robot) {
+    return robot.signal >= 0;
+  }
+
+  // Get map of visible robot IDs.
+  getVisibleRobotMap() {
+    return this._bc_game_state.shadow;
+  }
+
+  // Get boolean map of passable terrain.
+  getPassableMap() {
+    return this.map;
+  }
+
+  // Get boolean map of karbonite points.
+  getKarboniteMap() {
+    return this.karbonite_map;
+  }
+
+  // Get boolean map of impassable terrain.
+  getFuelMap() {
+    return this.fuel_map;
+  }
+
+  // Get a list of robots visible to you.
+  getVisibleRobots() {
+    return this._bc_game_state.visible;
+  }
+
+  turn() {
+    return null;
+  }
+}
 
 function attackFirst(self) {
   // Get all visible robots within the robots vision radius
@@ -76,6 +514,8 @@ function rushCastle(self, dest, destQ) {
   ) {
     // If the destination queue has coordinates and my current location is the
     // same as my next move's location, then pop next destination and set nextMove to it.
+    destQ.pop();
+    destQ.pop();
     nextMove = destQ.pop();
     const moveX = nextMove[0] - self.me.x;
     const moveY = nextMove[1] - self.me.y;
@@ -194,6 +634,7 @@ class PriorityQueue {
 }
 
 const adjChoices = [
+  [1, -1],
   [0, -1],
   [-1, -1],
   [-1, 0],
@@ -201,7 +642,6 @@ const adjChoices = [
   [0, 1],
   [1, 1],
   [1, 0],
-  [1, -1],
 ];
 /**
  * Finds an in-bounds open location adjacent to our robot
@@ -214,9 +654,6 @@ function availableLoc(selfX, selfY, visionMap, passableMap) {
     const xCoord = avail[0] + selfX;
     const yCoord = avail[1] + selfY;
     const inBounds = checkBounds([xCoord, yCoord], avail, visionMap[0].length);
-    if (inBounds === false) {
-      return null;
-    }
     let passable;
     if (inBounds) {
       passable = passableMap[yCoord][xCoord];
@@ -312,10 +749,7 @@ function checkBounds(start, toAdd, mapDim) {
 }
 function simplePathFinder(passableMap, visionMap, start, dest) {
   // Simple BFS pathfinder
-  // Really bad.
   const visited = fillArray(passableMap[0].length, false);
-  // const gScore: number[][] = fillArray(map[0].length, Infinity);
-  // const fScore: number[][] = fillArray(map[0].length, Infinity);
   const parentCoord = fillArray(passableMap[0].length, []);
   const moveQueue = [];
   const queue = new PriorityQueue();
@@ -325,8 +759,6 @@ function simplePathFinder(passableMap, visionMap, start, dest) {
     coord: start,
     priority: manhatDist(start, dest),
   });
-  // gScore[start[1]][start[0]] = 0;
-  // fScore[start[1]][start[0]] = manhatDist(start, dest);
   parentCoord[start[1]][start[0]] = start;
   while (queue.size() !== 0) {
     const nextHeapitem = queue.pop();
@@ -422,13 +854,6 @@ function enemyCastle(selfLoc, map, horizontal) {
   const mapLength = map.length;
   const xcor = selfLoc[0];
   const ycor = selfLoc[1];
-  /*
-    const coordinateVertical: number[] = [mapLength - xcor - 1, ycor];
-    const coordinateHorizontal: number[] = [xcor, mapLength - ycor - 1];
-  
-    if (!map[coordinateVertical[1]][coordinateVertical[0]]) { return coordinateVertical; }
-    else { return coordinateHorizontal; }
-    */
   const coordinateVertical = [mapLength - xcor - 1, ycor];
   const coordinateHorizontal = [xcor, mapLength - ycor - 1];
   if (!horizontal) {
@@ -437,11 +862,11 @@ function enemyCastle(selfLoc, map, horizontal) {
     return coordinateVertical;
   }
 }
-function horizontalFlip(self) {
-  const length = self.map.length;
+function horizontalFlip(map) {
+  const length = map.length;
   for (let x = 0; x < length; ++x) {
     for (let y = 0; y < length; ++y) {
-      if (!(self.map[y][x] === self.map[y][length - x - 1])) {
+      if (!(map[y][x] === map[y][length - x - 1])) {
         return false;
       }
     }
@@ -667,100 +1092,6 @@ function checkSignals(self) {
   }
 }
 
-function handleCrusader(self) {
-  // const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
-  if (self.me.turn === 1) {
-    self.log('> > CRUSADER FIRST TURN > >');
-    const visibleRobots = self.getVisibleRobots();
-    const robotMap = self.getVisibleRobotMap();
-    const listLength = visibleRobots.length;
-    for (let i = 0; i < listLength; ++i) {
-      const rob = visibleRobots[i];
-      if (rob.unit === SPECS.CASTLE) {
-        const horizontal = horizontalFlip(self);
-        const enemyCastleLoc = enemyCastle(
-          [rob.x, rob.y],
-          self.map,
-          horizontal,
-        );
-        self.friendlyCastleLoc.push([rob.x, rob.y]);
-        self.enemyCastleLoc.push(enemyCastleLoc);
-        self.destination = self.enemyCastleLoc[self.enemyCastleNum];
-        self.destinationQueue = simplePathFinder(
-          self.map,
-          robotMap,
-          [self.me.x, self.me.y],
-          self.destination,
-        );
-        self.log(
-          'CASTLE LOCATION - CRUSADER' +
-            self.enemyCastleLoc[self.enemyCastleNum][0] +
-            ', ' +
-            self.enemyCastleLoc[self.enemyCastleNum][1],
-        );
-      }
-    }
-  }
-  const attackingCoordinates = attackFirst(self);
-  if (attackingCoordinates) {
-    return self.attack(attackingCoordinates[0], attackingCoordinates[1]);
-  }
-  // Collect crusaders, have them rush when there are 10
-  if (visibleCrusaders(self) >= 10) {
-    self.rush = true;
-  }
-  if (self.rush) {
-    return rushMovement(self);
-  } else {
-    return checkerBoardMovement(self);
-  }
-}
-function rushMovement(self) {
-  if (self.runPathAgain > 1) {
-    const choice = availableLoc(
-      self.me.x,
-      self.me.y,
-      self.getVisibleRobotMap(),
-      self.map,
-    );
-    self.runPathAgain--;
-    return self.move(choice[0], choice[1]);
-  } else if (self.runPathAgain === 1) {
-    self.destinationQueue = simplePathFinder(
-      self.map,
-      self.getVisibleRobotMap(),
-      [self.me.x, self.me.y],
-      self.destination,
-    );
-    self.runPathAgain--;
-  }
-  if (
-    self.enemyCastleLoc !== null &&
-    (self.destinationQueue !== undefined && self.destinationQueue.length !== 0)
-  ) {
-    const toMove = rushCastle(self, self.destination, self.destinationQueue);
-    if (toMove === null) {
-      self.runPathAgain = 2;
-    } else {
-      return self.move(toMove[0], toMove[1]);
-    }
-  }
-  if (self.destinationQueue.length === 0) {
-    self.destinationQueue = simplePathFinder(
-      self.map,
-      self.getVisibleRobotMap(),
-      [self.me.x, self.me.y],
-      self.destination,
-    );
-  }
-  const choicer = availableLoc(
-    self.me.x,
-    self.me.y,
-    self.getVisibleRobotMap(),
-    self.map,
-  );
-  return self.move(choicer[0], choicer[1]);
-}
 function checkerBoardMovement(self) {
   const formation = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
   if (self.checkerBoardSpot === undefined) {
@@ -875,7 +1206,7 @@ function checkerBoardMovement(self) {
 function firstSpot(self) {
   // Move to first initial spot. If it is already occupied check to see if one of the formation
   // spots are available and move there.
-  const horizontal = horizontalFlip(self);
+  const horizontal = horizontalFlip(self.map);
   let firstSpots;
   const visionMap = self.getVisibleRobotMap();
   const inBounds = false;
@@ -1040,6 +1371,75 @@ function goTo(self) {
     );
   }
   return null;
+}
+
+function handleCrusader(self) {
+  if (self.me.turn === 1) {
+    self.log('> > CRUSADER FIRST TURN > >');
+    crusaderInit(self);
+  }
+  const attackingCoordinates = attackFirst(self);
+  if (attackingCoordinates) {
+    return self.attack(attackingCoordinates[0], attackingCoordinates[1]);
+  }
+  // Collect crusaders, have them rush when there are 1
+  if (visibleCrusaders(self) >= 3) {
+    self.rush = true;
+  }
+  if (self.rush) {
+    return rushCrusader(self);
+  } else {
+    return checkerBoardMovement(self);
+  }
+}
+function crusaderInit(self) {
+  const visibleRobots = self.getVisibleRobots();
+  const robotMap = self.getVisibleRobotMap();
+  const listLength = visibleRobots.length;
+  for (let i = 0; i < listLength; ++i) {
+    const rob = visibleRobots[i];
+    if (rob.unit === SPECS.CASTLE) {
+      const horizontal = horizontalFlip(self.map);
+      const enemyCastleLoc = enemyCastle([rob.x, rob.y], self.map, horizontal);
+      self.friendlyCastleLoc.push([rob.x, rob.y]);
+      self.enemyCastleLoc.push(enemyCastleLoc);
+      self.destination = self.enemyCastleLoc[self.enemyCastleNum];
+      self.destinationQueue = simplePathFinder(
+        self.map,
+        robotMap,
+        [self.me.x, self.me.y],
+        self.destination,
+      );
+      self.log(
+        'CASTLE LOCATION - CRUSADER ' +
+          self.enemyCastleLoc[self.enemyCastleNum][0] +
+          ', ' +
+          self.enemyCastleLoc[self.enemyCastleNum][1],
+      );
+    }
+  }
+  self.log('dest: ' + self.destination);
+  self.log('destQ.len ' + self.destinationQueue.length);
+}
+function rushCrusader(self) {
+  let toMove;
+  self.log(
+    '> > !!!!!!CRUSADER RUSHING!!!!! > > from ' + self.me.x + ',' + self.me.y,
+  );
+  if (self.destination === undefined || self.destinationQueue.length === 0) {
+    crusaderInit(self);
+  }
+  // DestinationQueue is still undefined for some reason, just move anywhere available
+  toMove =
+    self.destinationQueue.length === 0
+      ? availableLoc(self.me.x, self.me.y, self.getVisibleRobotMap(), self.map)
+      : rushCastle(self, self.destination, self.destinationQueue);
+  self.log('toMove = ' + toMove);
+  if (toMove === null) {
+    self.log('NO AVAILABLE MOVES');
+    return null;
+  }
+  return self.move(toMove[0], toMove[1]);
 }
 
 const KARBONITE = 1;
@@ -1226,7 +1626,6 @@ function findDiffMining(self) {
 }
 
 function handleProphet(self) {
-  // const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
   if (self.me.turn === 1) {
     self.log('> > PROPHET FIRST TURN > >');
     const visibleRobots = self.getVisibleRobots();
@@ -1235,7 +1634,7 @@ function handleProphet(self) {
     for (let i = 0; i < listLength; ++i) {
       const rob = visibleRobots[i];
       if (rob.unit === SPECS.CASTLE) {
-        const horizontal = horizontalFlip(self);
+        const horizontal = horizontalFlip(self.map);
         const enemyCastleLoc = enemyCastle(
           [rob.x, rob.y],
           self.map,
@@ -1259,18 +1658,17 @@ function handleProphet(self) {
       }
     }
   }
-  // this.log(`Prophet health: ${this.me.health}`);
   const attackingCoordinates = attackFirst(self);
   if (attackingCoordinates) {
     return self.attack(attackingCoordinates[0], attackingCoordinates[1]);
   }
   if (self.me.turn % 12 === 0) {
-    return rushMovement$1(self);
+    return rushProphet(self);
   } else {
-    return checkerBoardMovement$1(self);
+    return checkerBoardMovement(self);
   }
 }
-function rushMovement$1(self) {
+function rushProphet(self) {
   if (self.runPathAgain > 1) {
     const choice = availableLoc(
       self.me.x,
@@ -1316,290 +1714,11 @@ function rushMovement$1(self) {
   );
   return self.move(choicer[0], choicer[1]);
 }
-function checkerBoardMovement$1(self) {
-  const formation = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
-  if (self.checkerBoardSpot === undefined) {
-    self.checkerBoardSpot = firstSpot$1(self);
-  }
-  if (self.map[self.destination[1]][self.destination[0]] === false) {
-    self.log('DESTINATION IMPASSABLE' + '     ' + self.destination);
-    return null;
-  }
-  const visionMap = self.getVisibleRobotMap();
-  self.log('SELF.DESTINATION:::::' + self.destination);
-  self.log('visionMap ' + visionMap[self.destination[1]][self.destination[0]]);
-  if (self.me.x === self.destination[0] && self.me.y === self.destination[1]) {
-    self.log('AT DESTINATION');
-    return null;
-  } else if (visionMap[self.destination[1]][self.destination[0]] > 0) {
-    const firstX = self.destination[0];
-    const firstY = self.destination[1];
-    self.visitedBots.push(visionMap[firstY][firstX]);
-    let i;
-    for (i = 0; i < 4; ++i) {
-      const newX = firstX + formation[i][0];
-      const newY = firstY + formation[i][1];
-      // Make sure unit is also not going to a karbonite or fuel tile
-      let resourceCheck = true;
-      if (
-        self.karbonite_map[newY][newX] === true ||
-        self.fuel_map[newY][newX] === true
-      ) {
-        resourceCheck = false;
-      }
-      // Make sure that it is not too close to the CASTLE
-      const dist = manhatDist(self.friendlyCastleLoc[0], [newX, newY]);
-      let distCheck = true;
-      if (dist < 3) {
-        distCheck = false;
-      }
-      if (newX < 0 || newY < 0) {
-        continue;
-      }
-      if (
-        visionMap[newY][newX] === 0 &&
-        self.map[newY][newX] === true &&
-        resourceCheck === true &&
-        distCheck === true
-      ) {
-        self.log('HELLLLOOOOOO : : : ' + newX + ', ' + newY);
-        self.destination[0] = newX;
-        self.destination[1] = newY;
-        i = 5;
-        self.destinationQueue = simplePathFinder(
-          self.map,
-          self.getVisibleRobotMap(),
-          [self.me.x, self.me.y],
-          self.destination,
-        );
-        self.destinationQueue.pop();
-      }
-      if (i === 3) {
-        let x;
-        self.log('NO NEW SPACES AVAILABLE CHANGE DESTINATION');
-        for (x = 0; x < 4; ++x) {
-          const nextpointX = firstX + formation[x][0];
-          const nextpointY = firstY + formation[x][1];
-          if (
-            nextpointX === 0 ||
-            nextpointY === 0 ||
-            nextpointX === self.map.length - 1 ||
-            nextpointY === self.map.length - 1
-          ) {
-            continue;
-          }
-          let resourceChecks = true;
-          if (
-            self.karbonite_map[nextpointY][nextpointX] === true ||
-            self.fuel_map[nextpointY][nextpointX] === true
-          ) {
-            resourceChecks = false;
-          }
-          // Make sure that it is not too close to the CASTLE
-          const disti = manhatDist(self.friendlyCastleLoc[0], [
-            nextpointX,
-            nextpointY,
-          ]);
-          let distChecks = true;
-          if (disti < 3) {
-            distChecks = false;
-          }
-          if (self.visitedBots.includes(visionMap[nextpointY][nextpointX])) {
-            continue;
-          }
-          if (
-            resourceChecks === false ||
-            distChecks === false ||
-            self.map[nextpointY][nextpointX] === false
-          ) {
-            continue;
-          }
-          self.destination[0] = nextpointX;
-          self.destination[1] = nextpointY;
-          break;
-        }
-      }
-    }
-    if (i === 4) {
-      return null;
-    }
-    self.log('NEW DESTIONATION :::::: ' + self.destination);
-  }
-  return goTo$1(self);
-}
-function firstSpot$1(self) {
-  // Move to first initial spot. If it is already occupied check to see if one of the formation
-  // spots are available and move there.
-  const horizontal = horizontalFlip(self);
-  let firstSpots;
-  const visionMap = self.getVisibleRobotMap();
-  const inBounds = false;
-  if (!horizontal) {
-    if (self.enemyCastleLoc[1] > self.me.y) {
-      self.log('*****************X********');
-      // firstSpots = [self.me.x, self.me.y - 3];
-      firstSpots = [
-        self.friendlyCastleLoc[0][0],
-        self.friendlyCastleLoc[0][1] - 3,
-      ];
-      while (!inBounds) {
-        let resourceCheck = true;
-        if (
-          self.karbonite_map[firstSpots[1]][firstSpots[0]] === true ||
-          self.fuel_map[firstSpots[1]][firstSpots[0]] === true
-        ) {
-          resourceCheck = false;
-        }
-        if (
-          self.map[firstSpots[1]][firstSpots[0]] === true &&
-          resourceCheck === true
-        ) {
-          break;
-        }
-        firstSpots[0] = firstSpots[0] - 1;
-      }
-    } else {
-      // firstSpots = [self.me.x, self.me.y + 3];
-      firstSpots = [
-        self.friendlyCastleLoc[0][0],
-        self.friendlyCastleLoc[0][1] + 3,
-      ];
-      self.log('*****************1********');
-      while (!inBounds) {
-        if (
-          self.karbonite_map[firstSpots[1]][firstSpots[0]] === true ||
-          self.fuel_map[firstSpots[1]][firstSpots[0]] === true
-        );
-        if (self.map[firstSpots[1]][firstSpots[0]] === true) {
-          break;
-        }
-        firstSpots[0] = firstSpots[0] - 1;
-      }
-    }
-  } else {
-    if (self.enemyCastleLoc[0] > self.me.x) {
-      // firstSpots = [self.me.x - 3, self.me.y];
-      firstSpots = [
-        self.friendlyCastleLoc[0][0] - 3,
-        self.friendlyCastleLoc[0][1],
-      ];
-      self.log('*****************2********');
-      while (!inBounds) {
-        if (
-          self.karbonite_map[firstSpots[1]][firstSpots[0]] === true ||
-          self.fuel_map[firstSpots[1]][firstSpots[0]] === true
-        );
-        if (self.map[firstSpots[1]][firstSpots[0]] === true) {
-          break;
-        }
-        firstSpots[1] = firstSpots[1] - 1;
-      }
-    } else {
-      // firstSpots = [self.me.x + 3, self.me.y];
-      firstSpots = [
-        self.friendlyCastleLoc[0][0] + 3,
-        self.friendlyCastleLoc[0][1],
-      ];
-      self.log('*****************3********');
-      while (!inBounds) {
-        if (
-          self.karbonite_map[firstSpots[1]][firstSpots[0]] === true ||
-          self.fuel_map[firstSpots[1]][firstSpots[0]] === true
-        );
-        if (self.map[firstSpots[1]][firstSpots[0]] === true) {
-          break;
-        }
-        firstSpots[1] = firstSpots[1] - 1;
-      }
-    }
-  }
-  self.destination = firstSpots;
-  const visibleRobots = self.getVisibleRobots();
-  const listLength = visibleRobots.length;
-  let i;
-  for (i = 0; i < listLength; ++i) {
-    const rob = visibleRobots[i];
-    if (rob.x === self.destination[0] && rob.y === self.destination[1]) {
-      return null;
-    }
-  }
-  self.destinationQueue = simplePathFinder(
-    self.map,
-    self.getVisibleRobotMap(),
-    [self.me.x, self.me.y],
-    self.destination,
-  );
-  self.destinationQueue.pop();
-  return firstSpots;
-}
-function goTo$1(self) {
-  self.log('RUN PATH AGAIN ====' + self.runPathAgain);
-  if (self.runPathAgain === 1) {
-    if (
-      availableLoc(
-        self.me.x,
-        self.me.y,
-        self.getVisibleRobotMap(),
-        self.map,
-      ) === null
-    ) {
-      return null;
-    }
-    self.destinationQueue = simplePathFinder(
-      self.map,
-      self.getVisibleRobotMap(),
-      [self.me.x, self.me.y],
-      self.destination,
-    );
-    self.destinationQueue.pop();
-    self.runPathAgain--;
-  }
-  if (
-    availableLoc(self.me.x, self.me.y, self.getVisibleRobotMap(), self.map) ===
-    null
-  ) {
-    return null;
-  }
-  if (
-    self.enemyCastleLoc !== null &&
-    (self.destinationQueue !== undefined && self.destinationQueue.length !== 0)
-  ) {
-    const toMove = self.destinationQueue.pop();
-    self.log('DSADSADSADSADSA    ' + toMove);
-    toMove[0] = toMove[0] - self.me.x;
-    toMove[1] = toMove[1] - self.me.y;
-    self.log('TO MOVE ++++++ :' + toMove);
-    self.log('DESTINATION +++++ : ' + self.destination);
-    const visibleRobots = self.getVisibleRobots();
-    const listLength = visibleRobots.length;
-    let i;
-    for (i = 0; i < listLength; ++i) {
-      const rob = visibleRobots[i];
-      if (rob.x === toMove[0] && rob.y === toMove[1]) {
-        self.runPathAgain = 1;
-        return null;
-      }
-    }
-    if (toMove === null) {
-      self.runPathAgain = 1;
-    } else {
-      return self.move(toMove[0], toMove[1]);
-    }
-  }
-  if (self.destinationQueue.length === 0) {
-    self.destinationQueue = simplePathFinder(
-      self.map,
-      self.getVisibleRobotMap(),
-      [self.me.x, self.me.y],
-      self.destination,
-    );
-  }
-  return null;
-}
 
 class MyRobot extends BCAbstractRobot {
   constructor() {
     super();
+    this.rush = false;
     this.originalCastleLoc = undefined;
     this.resourceToMine = 0;
     this.resourceLocation = undefined;
@@ -1630,14 +1749,6 @@ class MyRobot extends BCAbstractRobot {
       case SPECS.CRUSADER: {
         this.log(' > > CRUSADER > >');
         return handleCrusader(this);
-        // const choice: number[] = availableLoc(this.me.x, this.me.y, this.getVisibleRobotMap(), this.map);
-        // // this.log(`Crusader health: ${this.me.health}`);
-        // // move torwards enemy castle
-        // const attackingCoordinates = attackFirst(this);
-        // if (attackingCoordinates) {
-        //   return this.attack(attackingCoordinates[0], attackingCoordinates[1]);
-        // }
-        // return this.move(choice[0], choice[1]);
       }
       case SPECS.PROPHET: {
         this.log('> > PROPHET > >');
@@ -1660,7 +1771,7 @@ class MyRobot extends BCAbstractRobot {
       case SPECS.CASTLE: {
         // get castle coordinates
         if (this.me.turn === 1) {
-          const horizontal = horizontalFlip(this);
+          const horizontal = horizontalFlip(this.map);
           this.enemyCastleLoc.push(
             enemyCastle([this.me.x, this.me.y], this.map, horizontal),
           );
@@ -1679,3 +1790,5 @@ class MyRobot extends BCAbstractRobot {
 // Prevent Rollup from removing the entire class for being unused
 // tslint:disable-next-line no-unused-expression
 new MyRobot();
+
+var robot = new MyRobot();
